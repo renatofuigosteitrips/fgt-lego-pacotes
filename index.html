@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1F1F1D">
+<title>Lego Pacotes FGT</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  margin: 0; padding: 0; background: #FAFAF7; color: #1F1F1D;
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+}
+.box {
+  max-width: 400px; width: calc(100% - 32px);
+  background: white; padding: 32px 24px; border-radius: 16px;
+  border: 1px solid #E5E3DC; text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.logo {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: #1F1F1D; color: white;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px; font-size: 28px; line-height: 1;
+}
+h1 { font-size: 20px; font-weight: 500; margin: 0 0 6px; }
+.sub { color: #6B6A65; font-size: 13px; margin-bottom: 24px; line-height: 1.5; }
+.opt {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 18px; margin-bottom: 10px;
+  background: #1F1F1D; color: white;
+  text-decoration: none; border-radius: 10px;
+  font-weight: 500; font-size: 15px;
+  transition: transform .12s;
+}
+.opt:active { transform: scale(0.98); }
+.opt.alt { background: white; color: #1F1F1D; border: 1px solid #D3D1C7; }
+.opt .icon { font-size: 18px; line-height: 1; }
+.loading {
+  color: #9B9994; font-size: 12px; margin-top: 18px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.spinner {
+  width: 12px; height: 12px; border: 2px solid #E5E3DC;
+  border-top-color: #BA7517; border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.foot { margin-top: 20px; font-size: 11px; color: #B4B2A9; }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">🧱</div>
+  <h1>Lego Pacotes FGT</h1>
+  <p class="sub" id="sub">Inteligência de Preços Kantu × FGT</p>
+
+  <a href="mobile.html" class="opt"><span class="icon">📱</span>Versão Mobile</a>
+  <a href="desktop.html" class="opt alt"><span class="icon">💻</span>Versão Desktop</a>
+
+  <div class="loading" id="loading">
+    <span class="spinner"></span>
+    <span>Detectando dispositivo…</span>
+  </div>
+
+  <div class="foot">Fui Gostei Trips · v3</div>
+</div>
+
+<script>
+(function() {
+  // Detecção mobile: pointer touch primário OU viewport estreita
+  const isCoarse = matchMedia('(pointer: coarse)').matches;
+  const isNarrow = matchMedia('(max-width: 900px)').matches;
+  const isMobileUA = /iPhone|iPad|iPod|Android|Mobile|Silk|Tablet/i.test(navigator.userAgent);
+  const isMobile = isCoarse || isNarrow || isMobileUA;
+
+  // Permite forçar via ?force=mobile|desktop
+  const params = new URLSearchParams(location.search);
+  const forced = params.get('force');
+  const target = forced === 'mobile' ? 'mobile.html'
+               : forced === 'desktop' ? 'desktop.html'
+               : (isMobile ? 'mobile.html' : 'desktop.html');
+
+  // Mostra qual vai abrir e redireciona após 800ms (UX: vê a tela uma vez)
+  document.getElementById('sub').textContent = isMobile
+    ? 'Detectei celular/tablet — abrindo versão mobile…'
+    : 'Detectei computador — abrindo versão desktop…';
+
+  setTimeout(() => location.replace(target), 800);
+})();
+</script>
+</body>
+</html>
