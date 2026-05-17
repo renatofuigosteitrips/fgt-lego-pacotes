@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lego Pacotes — FGT Inteligência de Preços</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  margin: 0; padding: 0; background: #FAFAF7; color: #1F1F1D; font-size: 14px; line-height: 1.5;
+}
+.app { max-width: 1400px; margin: 0 auto; padding: 24px; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #E5E3DC; }
+header h1 { font-size: 20px; font-weight: 500; margin: 0; }
+header .sub { font-size: 12px; color: #6B6A65; margin-top: 4px; }
+.toolbar { display: flex; gap: 8px; }
+button { font: inherit; background: transparent; border: 1px solid #D3D1C7; padding: 6px 12px; border-radius: 6px; cursor: pointer; color: #1F1F1D; transition: background .15s; }
+button:hover { background: #F1EFE8; }
+button.primary { background: #1F1F1D; color: #FAFAF7; border-color: #1F1F1D; }
+button.primary:hover { background: #444441; }
+button.danger { color: #791F1F; border-color: #F0C4C4; }
+button.danger:hover { background: #FCEBEB; }
+button.small { padding: 3px 8px; font-size: 12px; }
+.tabs { display: flex; gap: 0; border-bottom: 1px solid #E5E3DC; margin-bottom: 20px; }
+.tab { padding: 10px 18px; cursor: pointer; border: none; background: transparent; font-size: 14px; font-weight: 500; color: #6B6A65; border-bottom: 2px solid transparent; margin-bottom: -1px; border-radius: 0; }
+.tab.active { color: #1F1F1D; border-bottom-color: #1F1F1D; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.controls-row { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+.search-input { padding: 6px 10px; border: 1px solid #D3D1C7; border-radius: 6px; font: inherit; min-width: 200px; }
+select { padding: 6px 10px; border: 1px solid #D3D1C7; border-radius: 6px; font: inherit; background: white; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 0 0 1px #E5E3DC; }
+th { text-align: left; padding: 10px 8px; font-weight: 500; color: #6B6A65; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; background: #F7F5EE; border-bottom: 1px solid #E5E3DC; }
+td { padding: 8px; border-bottom: 1px solid #F0EEE8; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #FBFAF5; }
+td input, td select { width: 100%; border: 1px solid transparent; background: transparent; padding: 4px 6px; border-radius: 4px; font: inherit; }
+td input:focus, td select:focus { background: #FFFCEC; border-color: #EF9F27; outline: none; }
+td input[type=number] { text-align: right; }
+td input[type=checkbox] { width: auto; }
+.tipo-tag { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+.tipo-Atividade-Dia { background: #9FE1CB; color: #04342C; }
+.tipo-Pacote-Base { background: #CECBF6; color: #26215C; }
+.tipo-Trekking-Multi { background: #F5C4B3; color: #4A1B0C; }
+.tipo-Trem { background: #ED93B1; color: #4B1528; }
+.tipo-Hotel { background: #D3D1C7; color: #2C2C2A; }
+.tipo-Ingresso { background: #FAC775; color: #412402; }
+.tipo-Guia { background: #C0DD97; color: #173404; }
+.tipo-Transfer { background: #E5E3DC; color: #444441; }
+.tipo-Voo { background: #F09595; color: #501313; }
+.tipo-Outro { background: #F1EFE8; color: #444441; }
+
+.pacote-grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+.pacote-list { background: white; border-radius: 8px; padding: 12px; box-shadow: 0 0 0 1px #E5E3DC; max-height: 70vh; overflow-y: auto; }
+.pacote-item { padding: 10px 12px; border-radius: 6px; cursor: pointer; border: 1px solid transparent; margin-bottom: 4px; }
+.pacote-item:hover { background: #FBFAF5; }
+.pacote-item.selected { background: #FFF7E3; border-color: #EF9F27; }
+.pacote-item-name { font-weight: 500; font-size: 13px; }
+.pacote-item-meta { font-size: 11px; color: #6B6A65; margin-top: 2px; }
+.pacote-detail { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 0 0 1px #E5E3DC; }
+.pacote-detail h2 { font-size: 18px; font-weight: 500; margin: 0 0 4px; }
+.pacote-detail .meta-input { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.field-group { display: flex; flex-direction: column; gap: 4px; }
+.field-group label { font-size: 11px; color: #6B6A65; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 500; }
+.field-group input, .field-group select { padding: 6px 10px; border: 1px solid #D3D1C7; border-radius: 6px; font: inherit; }
+.field-group input:focus, .field-group select:focus { outline: none; border-color: #EF9F27; background: #FFFCEC; }
+
+.composicao { margin-top: 20px; }
+.composicao h3 { font-size: 14px; font-weight: 500; margin: 0 0 10px; }
+.peca-add-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+.peca-add-row select { flex: 1; }
+.peca-add-row input[type=number] { width: 70px; padding: 6px 8px; border: 1px solid #D3D1C7; border-radius: 6px; font: inherit; }
+.composicao-list { background: #FBFAF5; border-radius: 6px; padding: 8px; }
+.composicao-row { display: grid; grid-template-columns: 28px 1fr 60px 80px 80px 80px 80px 30px; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 4px; font-size: 12px; }
+.composicao-row:hover { background: white; }
+.composicao-row.header { font-weight: 500; color: #6B6A65; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+.composicao-row input[type=number] { width: 50px; padding: 4px 6px; border: 1px solid #D3D1C7; border-radius: 4px; font: inherit; text-align: right; }
+
+.totals { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+.totals-card { background: #F7F5EE; border-radius: 8px; padding: 16px; }
+.totals-card h4 { font-size: 12px; font-weight: 500; margin: 0 0 12px; color: #6B6A65; text-transform: uppercase; letter-spacing: 0.04em; }
+.totals-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+.totals-row .label { color: #6B6A65; }
+.totals-row .value { font-weight: 500; }
+.totals-row.highlight { border-top: 1px solid #D3D1C7; padding-top: 8px; margin-top: 4px; }
+
+.delta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }
+.delta-card { padding: 12px; border-radius: 8px; }
+.delta-card .label { font-size: 11px; color: #6B6A65; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+.delta-card .value { font-size: 20px; font-weight: 500; }
+.delta-card .sub { font-size: 11px; color: #6B6A65; margin-top: 2px; }
+.delta-positive { background: #EAF3DE; }
+.delta-positive .value { color: #173404; }
+.delta-negative { background: #FCEBEB; }
+.delta-negative .value { color: #501313; }
+.delta-neutral { background: #F1EFE8; }
+.delta-neutral .value { color: #444441; }
+
+.empty-state { padding: 40px; text-align: center; color: #6B6A65; }
+.checkbox-wrap { display: flex; align-items: center; gap: 4px; }
+
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.metric-card { background: white; padding: 16px; border-radius: 8px; box-shadow: 0 0 0 1px #E5E3DC; }
+.metric-card .label { font-size: 11px; color: #6B6A65; text-transform: uppercase; letter-spacing: 0.04em; }
+.metric-card .value { font-size: 24px; font-weight: 500; margin: 6px 0 2px; }
+.metric-card .sub { font-size: 12px; color: #6B6A65; }
+
+.dashboard-section { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 0 0 1px #E5E3DC; }
+.dashboard-section h3 { font-size: 14px; font-weight: 500; margin: 0 0 12px; }
+.toast { position: fixed; bottom: 24px; right: 24px; background: #1F1F1D; color: #FAFAF7; padding: 10px 16px; border-radius: 6px; font-size: 13px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+.toast.show { opacity: 1; }
+
+.help-text { font-size: 12px; color: #6B6A65; margin-bottom: 12px; line-height: 1.5; }
+.help-text code { background: #F1EFE8; padding: 1px 5px; border-radius: 3px; font-size: 11px; font-family: ui-monospace, "SF Mono", monospace; }
+
+.flag-yes { color: #173404; font-weight: 500; }
+.flag-no { color: #6B6A65; }
+.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ====== ABA MONTAR ====== */
+.montar-header { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+.montar-header select { min-width: 280px; padding: 8px 12px; font-size: 14px; }
+.montar-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; align-items: start; }
+.paleta-wrap, .montagem-wrap { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 0 0 1px #E5E3DC; }
+.paleta-wrap h3, .montagem-wrap h3 { font-size: 13px; font-weight: 500; margin: 0 0 12px; color: #6B6A65; text-transform: uppercase; letter-spacing: 0.06em; }
+.paleta-filtro { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.paleta-filtro button { padding: 4px 10px; font-size: 11px; border-radius: 99px; }
+.paleta-filtro button.active { background: #1F1F1D; color: #FAFAF7; border-color: #1F1F1D; }
+
+.paleta-grupo { margin-bottom: 14px; }
+.paleta-grupo-titulo { font-size: 11px; font-weight: 500; color: #6B6A65; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+.paleta-grupo-blocos { display: flex; flex-wrap: wrap; gap: 6px; }
+.bloco {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 10px; border-radius: 6px;
+  font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: transform .12s, box-shadow .12s;
+  border: 1px solid transparent;
+  user-select: none;
+}
+.bloco:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.bloco:active { transform: translateY(0) scale(0.96); }
+.bloco .bloco-nome { line-height: 1.2; }
+.bloco .bloco-preco { font-weight: 400; font-size: 11px; opacity: 0.75; }
+.bloco .bloco-add { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 99px; background: rgba(255,255,255,0.6); font-size: 14px; font-weight: 500; }
+.bloco.paleta-Atividade-Dia { background: #9FE1CB; color: #04342C; border-color: #1D9E75; }
+.bloco.paleta-Pacote-Base { background: #CECBF6; color: #26215C; border-color: #7F77DD; }
+.bloco.paleta-Trekking-Multi { background: #F5C4B3; color: #4A1B0C; border-color: #D85A30; }
+.bloco.paleta-Trem { background: #ED93B1; color: #4B1528; border-color: #D4537E; }
+.bloco.paleta-Hotel { background: #D3D1C7; color: #2C2C2A; border-color: #888780; }
+.bloco.paleta-Ingresso { background: #FAC775; color: #412402; border-color: #BA7517; }
+.bloco.paleta-Guia { background: #C0DD97; color: #173404; border-color: #639922; }
+.bloco.paleta-Transfer { background: #E5E3DC; color: #444441; border-color: #B4B2A9; }
+.bloco.paleta-Voo { background: #F09595; color: #501313; border-color: #E24B4A; }
+.bloco.paleta-Outro { background: #F1EFE8; color: #444441; border-color: #B4B2A9; }
+.bloco.status-a-cadastrar { opacity: 0.55; border-style: dashed; }
+.bloco.status-a-cadastrar::after { content: ' ⏳'; }
+.bloco.status-rascunho { border-style: dashed; }
+.bloco.status-rascunho::after { content: ' ✎'; font-size: 10px; opacity: 0.6; }
+
+.caixa-pacote { background: #FBFAF5; border: 2px dashed #D3D1C7; border-radius: 12px; padding: 14px; min-height: 200px; }
+.caixa-pacote.has-items { border-style: solid; border-color: #C0DD97; background: #F7FBF0; }
+.caixa-vazia { text-align: center; color: #9B9994; font-size: 13px; padding: 40px 20px; }
+.caixa-vazia i { font-size: 22px; display: block; margin-bottom: 6px; opacity: 0.5; }
+.bloco-no-pacote { display: flex; align-items: center; gap: 8px; padding: 8px 10px; margin-bottom: 4px; border-radius: 6px; border: 1px solid transparent; font-size: 12px; }
+.bloco-no-pacote .bloco-tipo-tag { width: 4px; height: 28px; border-radius: 2px; flex-shrink: 0; }
+.bloco-no-pacote .bloco-info { flex: 1; min-width: 0; }
+.bloco-no-pacote .bloco-info-nome { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bloco-no-pacote .bloco-info-tipo { font-size: 10px; color: #6B6A65; }
+.bloco-no-pacote .qty-controls { display: flex; align-items: center; gap: 4px; }
+.bloco-no-pacote .qty-btn { width: 24px; height: 24px; border-radius: 4px; border: 1px solid #D3D1C7; background: white; cursor: pointer; font-size: 14px; line-height: 1; display: flex; align-items: center; justify-content: center; padding: 0; }
+.bloco-no-pacote .qty-btn:hover { background: #F1EFE8; }
+.bloco-no-pacote .qty-display { min-width: 24px; text-align: center; font-weight: 500; }
+.bloco-no-pacote .remover { color: #791F1F; cursor: pointer; padding: 4px; }
+.bloco-no-pacote .preco-bloco { font-size: 11px; color: #6B6A65; font-variant-numeric: tabular-nums; min-width: 50px; text-align: right; }
+
+.resumo-mini { background: white; border-radius: 8px; padding: 12px; margin-top: 14px; border: 1px solid #E5E3DC; }
+.resumo-mini-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; }
+.resumo-mini-row.destaque { font-weight: 500; border-top: 1px solid #E5E3DC; padding-top: 6px; margin-top: 4px; font-size: 13px; }
+.resumo-mini-row .resumo-label { color: #6B6A65; }
+.delta-badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+.delta-badge.pos { background: #EAF3DE; color: #173404; }
+.delta-badge.neg { background: #FCEBEB; color: #501313; }
+.delta-badge.neu { background: #F1EFE8; color: #444441; }
+
+@keyframes flyIn { 0% { transform: scale(1.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.bloco-no-pacote.just-added { animation: flyIn .25s ease-out; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>Lego Pacotes — FGT Inteligência de Preços</h1>
+      <div class="sub">Cadastre peças, monte pacotes, compare custos e preços. Dados persistidos localmente no navegador.</div>
+    </div>
+    <div class="toolbar">
+      <button onclick="exportData()">Exportar JSON</button>
+      <button onclick="document.getElementById('import-file').click()">Importar JSON</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)" />
+      <button class="danger" onclick="resetData()">Resetar ao padrão</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="dashboard">Resumo</button>
+    <button class="tab" data-tab="montar">Montar (blocos)</button>
+    <button class="tab" data-tab="pecas">Peças</button>
+    <button class="tab" data-tab="pacotes">Pacotes</button>
+  </nav>
+
+  <section id="tab-dashboard" class="tab-content active"></section>
+  <section id="tab-montar" class="tab-content"></section>
+  <section id="tab-pecas" class="tab-content"></section>
+  <section id="tab-pacotes" class="tab-content"></section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ===========================================================================
+// DADOS PADRÃO v2 — peças atômicas indivisíveis baseadas em
+// "Preços e Custo Cusco - Kantu - Cruzamento BDT × SoftTur.csv" (mai/2026)
+// ===========================================================================
+// Tipos:
+//   - Atividade-Dia      = tour de 1 dia vendido avulso (City Tour, Maras, Rainbow…)
+//   - Pacote-Base        = operação multi-dia Kantu (NET puro, sem hotel/trem/ingresso)
+//   - Trekking-Multi     = trekking multi-dia (já inclui hospedagem/alimentação)
+//   - Trem               = bilhete trem (independente)
+//   - Hotel              = noite (por pessoa em quarto duplo, NET base)
+//   - Ingresso           = entrada Machu Picchu
+//   - Guia               = serviço de guia privado
+//   - Transfer           = transfer aeroporto/hotel
+const DEFAULT_PECAS_OLD = [
+  // Tours dia Cusco (vendidos avulsos pela Kantu B2C)
+  { id: 'cusco-city',    nome: 'Cusco City Tour',           tipo: 'Tour-Cusco',        unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 18,  avulso_kantu: true,  avulso_fgt: true,  notas: 'Half day, easy. SoftTur 25557-25783.' },
+  { id: 'sacred-valley', nome: 'Vale Sagrado',              tipo: 'Tour-Cusco',        unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 35,  avulso_kantu: true,  avulso_fgt: true,  notas: 'Full day. Bestseller.' },
+  { id: 'maras-moray',   nome: 'Maras & Moray',             tipo: 'Tour-Cusco',        unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 25,  avulso_kantu: true,  avulso_fgt: true,  notas: '1 day, easy.' },
+  { id: 'south-valley',  nome: 'South Valley Tour',         tipo: 'Tour-Cusco',        unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 25,  avulso_kantu: true,  avulso_fgt: true,  notas: 'Half day.' },
+  { id: 'super-valle',   nome: 'Super Vale Sagrado + Maras',tipo: 'Tour-Cusco',        unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 42,  avulso_kantu: true,  avulso_fgt: false, notas: '' },
+  { id: 'qeswachaka',    nome: 'Qeswachaka (ponte inca)',   tipo: 'Tour-Cusco',        unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 45,  avulso_kantu: true,  avulso_fgt: false, notas: 'Privado.' },
+  { id: 'pisaq',         nome: 'Pisaq (mercado + ruínas)',  tipo: 'Tour-Cusco',        unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 25,  avulso_kantu: true,  avulso_fgt: false, notas: '' },
+  { id: 'cooking',       nome: 'Cooking Class Cusco',       tipo: 'Tour-Cusco',        unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 99,  avulso_kantu: true,  avulso_fgt: false, notas: 'Premium.' },
+  { id: 'cusco-viewpoints', nome: 'Cusco Viewpoints (privado)',tipo: 'Tour-Cusco',     unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 120, avulso_kantu: true,  avulso_fgt: false, notas: '' },
+
+  // Aventura Cusco
+  { id: 'rainbow',       nome: 'Rainbow Mountain (Vinicunca)',tipo: 'Aventura',       unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 35,  avulso_kantu: true,  avulso_fgt: true,  notas: '1 day, moderate.' },
+  { id: 'humantay',      nome: 'Humantay Lake (1 dia)',     tipo: 'Aventura',          unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 35,  avulso_kantu: true,  avulso_fgt: true,  notas: '1 day, moderate.' },
+  { id: 'chonta',        nome: 'Flight of the Condor (Chonta)',tipo:'Aventura',        unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 70,  avulso_kantu: true,  avulso_fgt: false, notas: '' },
+
+  // Aventura extrema Cusco
+  { id: 'atv-maras',     nome: 'ATV Maras Moray',           tipo: 'Aventura-Extrema',  unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 55,  avulso_kantu: true,  avulso_fgt: false, notas: 'SoftTur 25779,25566,25567,25687.' },
+  { id: 'atv-abode',     nome: 'ATV Abode of the Gods',     tipo: 'Aventura-Extrema',  unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 20,  avulso_kantu: true,  avulso_fgt: false, notas: '' },
+  { id: 'rafting',       nome: 'Rafting',                   tipo: 'Aventura-Extrema',  unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 55,  avulso_kantu: false, avulso_fgt: false, notas: 'Aparece só em pacotes Cusco Adventure.' },
+
+  // Machu Picchu (núcleo)
+  { id: 'mp-day-package',nome: 'MP Day Trip (Kantu pronto)',tipo: 'MP',                unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 298, avulso_kantu: true,  avulso_fgt: true,  notas: 'Inclui trem RT + ônibus + entrada MP + guia.' },
+  { id: 'ingresso-mp',   nome: 'Ingresso Machu Picchu',     tipo: 'Ingresso',          unidade: 'pessoa', custo_kantu: 45, custo_direto: 45, preco_fgt: 0, preco_mercado: 45,  avulso_kantu: true,  avulso_fgt: true,  notas: 'Tarifa oficial Mincul.' },
+  { id: 'bus-mp',        nome: 'Ônibus Consettur (MP RT)',  tipo: 'Transfer',          unidade: 'pessoa', custo_kantu: 24, custo_direto: 24, preco_fgt: 0, preco_mercado: 24,  avulso_kantu: false, avulso_fgt: true,  notas: 'Aguas Calientes - MP RT.' },
+
+  // Trens
+  { id: 'trem-expedition-rt', nome: 'PeruRail Expedition RT', tipo: 'Trem',            unidade: 'pessoa', custo_kantu: 75, custo_direto: 138,preco_fgt: 0, preco_mercado: 138, avulso_kantu: false, avulso_fgt: true,  notas: 'NET Kantu ~$65-85; retail $120-155.' },
+  { id: 'trem-vistadome-rt',  nome: 'PeruRail Vistadome RT',  tipo: 'Trem',            unidade: 'pessoa', custo_kantu: 110,custo_direto: 165,preco_fgt: 0, preco_mercado: 165, avulso_kantu: false, avulso_fgt: true,  notas: 'NET Kantu $100-120; sweet spot FGT.' },
+  { id: 'trem-observatory-rt',nome: 'PeruRail Vistadome Observatory RT', tipo: 'Trem', unidade: 'pessoa', custo_kantu: 150,custo_direto: 215,preco_fgt: 0, preco_mercado: 215, avulso_kantu: false, avulso_fgt: true,  notas: 'NET Kantu $130-170; classe premium.' },
+  { id: 'trem-voyager-rt',    nome: 'IncaRail Voyager RT',    tipo: 'Trem',            unidade: 'pessoa', custo_kantu: 0,  custo_direto: 120,preco_fgt: 0, preco_mercado: 120, avulso_kantu: false, avulso_fgt: true,  notas: 'Retail IncaRail.' },
+  { id: 'trem-360-rt',        nome: 'IncaRail 360° RT',       tipo: 'Trem',            unidade: 'pessoa', custo_kantu: 0,  custo_direto: 150,preco_fgt: 0, preco_mercado: 150, avulso_kantu: false, avulso_fgt: true,  notas: '' },
+
+  // Hotéis Cusco (NET firme do baseline Abr/2026)
+  { id: 'hotel-2-cusco-sgl', nome: 'Hotel 2★ Cusco — Single',tipo: 'Hotel',            unidade: 'noite',  custo_kantu: 50, custo_direto: 0,  preco_fgt: 0, preco_mercado: 0,   avulso_kantu: false, avulso_fgt: true,  notas: 'SoftTur 25668.' },
+  { id: 'hotel-2-cusco-dbl', nome: 'Hotel 2★ Cusco — Duplo', tipo: 'Hotel',            unidade: 'quarto', custo_kantu: 50, custo_direto: 0,  preco_fgt: 0, preco_mercado: 0,   avulso_kantu: false, avulso_fgt: true,  notas: 'SoftTur 25669.' },
+  { id: 'hotel-3-cusco-sgl', nome: 'Hotel 3★ Cusco — Single',tipo: 'Hotel',            unidade: 'noite',  custo_kantu: 85, custo_direto: 0,  preco_fgt: 0, preco_mercado: 0,   avulso_kantu: false, avulso_fgt: true,  notas: 'SoftTur 25671.' },
+  { id: 'hotel-3-cusco-dbl', nome: 'Hotel 3★ Cusco — Duplo', tipo: 'Hotel',            unidade: 'quarto', custo_kantu: 86, custo_direto: 0,  preco_fgt: 0, preco_mercado: 0,   avulso_kantu: false, avulso_fgt: true,  notas: 'Maior premium vs mercado (P79).' },
+  { id: 'hotel-4-cusco-sgl', nome: 'Hotel 4★ Cusco — Single',tipo: 'Hotel',            unidade: 'noite',  custo_kantu: 120,custo_direto: 0,  preco_fgt: 0, preco_mercado: 0,   avulso_kantu: false, avulso_fgt: true,  notas: 'Abaixo da mediana (P22) — trunfo.' },
+  { id: 'hotel-4-cusco-dbl', nome: 'Hotel 4★ Cusco — Duplo', tipo: 'Hotel',            unidade: 'quarto', custo_kantu: 120,custo_direto: 0,  preco_fgt: 0, preco_mercado: 0,   avulso_kantu: false, avulso_fgt: true,  notas: '' },
+  { id: 'hotel-ac',          nome: 'Hotel Aguas Calientes (genérico)',tipo: 'Hotel',   unidade: 'noite',  custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 0,   avulso_kantu: false, avulso_fgt: true,  notas: 'Estrutura SoftTur 25659-25667.' },
+  { id: 'hotel-vs',          nome: 'Hotel Vale Sagrado (genérico)',  tipo: 'Hotel',    unidade: 'noite',  custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 0,   avulso_kantu: false, avulso_fgt: true,  notas: 'SoftTur 25677-25682.' },
+
+  // Cidade Peru (componentes de pacotes multi-cidade)
+  { id: 'lima-city',     nome: 'Lima City Tour',            tipo: 'Cidade-Peru',       unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 55,  avulso_kantu: false, avulso_fgt: false, notas: '' },
+  { id: 'arequipa-city', nome: 'Arequipa City Tour',        tipo: 'Cidade-Peru',       unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 50,  avulso_kantu: false, avulso_fgt: false, notas: '' },
+  { id: 'titicaca',      nome: 'Lake Titicaca (Puno)',      tipo: 'Cidade-Peru',       unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 55,  avulso_kantu: false, avulso_fgt: false, notas: '' },
+  { id: 'huacachina',    nome: 'Huacachina / Paracas',      tipo: 'Cidade-Peru',       unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 115, avulso_kantu: false, avulso_fgt: false, notas: '' },
+  { id: 'amazon-lodge',  nome: 'Amazon Lodge (3 dias)',     tipo: 'Cidade-Peru',       unidade: 'pacote', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 0,   avulso_kantu: false, avulso_fgt: false, notas: 'Puerto Maldonado.' },
+  { id: 'colca',         nome: 'Colca Canyon',              tipo: 'Cidade-Peru',       unidade: 'pessoa', custo_kantu: 0,  custo_direto: 0,  preco_fgt: 0, preco_mercado: 0,   avulso_kantu: false, avulso_fgt: false, notas: '' },
+
+  // Voos domésticos
+  { id: 'voo-lim-cuz-rt',nome: 'Voo Lima ↔ Cusco RT',       tipo: 'Voo',               unidade: 'pessoa', custo_kantu: 0,  custo_direto: 110,preco_fgt: 0, preco_mercado: 110, avulso_kantu: false, avulso_fgt: true,  notas: 'LATAM/Sky $80-150 RT.' },
+  { id: 'voo-cuz-pem',   nome: 'Voo Cusco ↔ Puerto Maldonado',tipo: 'Voo',             unidade: 'pessoa', custo_kantu: 0,  custo_direto: 100,preco_fgt: 0, preco_mercado: 100, avulso_kantu: false, avulso_fgt: true,  notas: '' },
+  { id: 'voo-lim-aqp-rt',nome: 'Voo Lima ↔ Arequipa RT',    tipo: 'Voo',               unidade: 'pessoa', custo_kantu: 0,  custo_direto: 90, preco_fgt: 0, preco_mercado: 90,  avulso_kantu: false, avulso_fgt: true,  notas: '' },
+
+  // Transfer / Guia
+  { id: 'transfer-aero', nome: 'Transfer aeroporto ↔ hotel',tipo: 'Transfer',          unidade: 'trecho', custo_kantu: 15, custo_direto: 25, preco_fgt: 0, preco_mercado: 25,  avulso_kantu: false, avulso_fgt: true,  notas: '' },
+  { id: 'guia-priv',     nome: 'Guia bilíngue (privado/dia)',tipo: 'Guia',             unidade: 'dia',    custo_kantu: 60, custo_direto: 80, preco_fgt: 0, preco_mercado: 80,  avulso_kantu: false, avulso_fgt: true,  notas: '' }
+];
+
+// ===========================================================================
+// PEÇAS ATÔMICAS — v2 (baseadas em SoftTur × BDT)
+// Cada peça é INDIVISÍVEL. Pacotes Kantu B2C montam combinações destas.
+// ===========================================================================
+const DEFAULT_PECAS = [
+  // -------- ATIVIDADES DIA (vendidas avulsas pela Kantu) --------
+  { id: 'cusco-city',         nome: 'City Tour Cusco',                       tipo: 'Atividade-Dia', softtur_id: '25559', bdt_codigo: 'CZ CTC BA CT A', unidade: 'pessoa', custo_kantu: 10,  custo_direto: 0, preco_fgt: 0, preco_mercado: 25,  preco_tabela_brl: 150,  avulso_kantu: true, avulso_fgt: true,  notas: 'Half day, easy.' },
+  { id: 'valle-sul',          nome: 'Valle Sul de Cusco',                    tipo: 'Atividade-Dia', softtur_id: '25560', bdt_codigo: 'CZ VSC BA CD A', unidade: 'pessoa', custo_kantu: 15,  custo_direto: 0, preco_fgt: 0, preco_mercado: 30,  preco_tabela_brl: 180,  avulso_kantu: true, avulso_fgt: true,  notas: '' },
+  { id: 'maras-moray',        nome: 'Maras e Moray Clássico',                tipo: 'Atividade-Dia', softtur_id: '25561', bdt_codigo: 'CZ MMC BA CD A', unidade: 'pessoa', custo_kantu: 15,  custo_direto: 0, preco_fgt: 0, preco_mercado: 30,  preco_tabela_brl: 180,  avulso_kantu: true, avulso_fgt: true,  notas: '' },
+  { id: 'super-valle',        nome: 'Super Valle Sagrado',                   tipo: 'Atividade-Dia', softtur_id: '25562', bdt_codigo: 'CZ SVS BA CD A', unidade: 'pessoa', custo_kantu: 28,  custo_direto: 0, preco_fgt: 0, preco_mercado: 49,  preco_tabela_brl: 290,  avulso_kantu: true, avulso_fgt: true,  notas: '' },
+  { id: 'maras-bike',         nome: 'Maras e Moray com Bike Tour',           tipo: 'Atividade-Dia', softtur_id: '25563', bdt_codigo: 'CZ MMB BA CD A', unidade: 'pessoa', custo_kantu: 70,  custo_direto: 0, preco_fgt: 0, preco_mercado: 100, preco_tabela_brl: 690,  avulso_kantu: true, avulso_fgt: false, notas: '' },
+  { id: 'maras-lhamas',       nome: 'Maras e Moray Piquenique c/ Lhamas',    tipo: 'Atividade-Dia', softtur_id: '25569', bdt_codigo: 'CZ MML CF CD A', unidade: 'pessoa', custo_kantu: 92,  custo_direto: 0, preco_fgt: 0, preco_mercado: 130, preco_tabela_brl: 890,  avulso_kantu: true, avulso_fgt: false, notas: 'Min 2 pax.' },
+  { id: 'valle-sagrado',      nome: 'Valle Sagrado dos Incas',               tipo: 'Atividade-Dia', softtur_id: '25780', bdt_codigo: 'CZ VSI BA CD A', unidade: 'pessoa', custo_kantu: 23,  custo_direto: 0, preco_fgt: 0, preco_mercado: 49,  preco_tabela_brl: 290,  avulso_kantu: true, avulso_fgt: true,  notas: '' },
+  { id: 'trek-humantay-dia',  nome: 'Trekking Laguna Humantay',              tipo: 'Atividade-Dia', softtur_id: '25557', bdt_codigo: 'CZ TLH BA CD A', unidade: 'pessoa', custo_kantu: 25,  custo_direto: 0, preco_fgt: 0, preco_mercado: 49,  preco_tabela_brl: 290,  avulso_kantu: true, avulso_fgt: true,  notas: '' },
+  { id: 'trek-rainbow-dia',   nome: 'Trekking Montanha 7 Cores (Rainbow)',   tipo: 'Atividade-Dia', softtur_id: '25568', bdt_codigo: 'CZ MAI BA CD A', unidade: 'pessoa', custo_kantu: 25,  custo_direto: 0, preco_fgt: 0, preco_mercado: 49,  preco_tabela_brl: 290,  avulso_kantu: true, avulso_fgt: true,  notas: '' },
+  { id: 'tour-gastro',        nome: 'Tour Gastronômico Cusco',               tipo: 'Atividade-Dia', softtur_id: '25783', bdt_codigo: 'CZ CC PM',       unidade: 'pessoa', custo_kantu: 75,  custo_direto: 0, preco_fgt: 0, preco_mercado: 100, preco_tabela_brl: 720,  avulso_kantu: true, avulso_fgt: false, notas: '' },
+  { id: 'rota-sol-cz-puno',   nome: 'Rota do Sol Cusco/Puno',                tipo: 'Atividade-Dia', softtur_id: '25781', bdt_codigo: 'CZ CP FD',       unidade: 'pessoa', custo_kantu: 95,  custo_direto: 0, preco_fgt: 0, preco_mercado: 125, preco_tabela_brl: 920,  avulso_kantu: true, avulso_fgt: false, notas: '' },
+  { id: 'rota-sol-puno-cz',   nome: 'Rota do Sol Puno/Cusco',                tipo: 'Atividade-Dia', softtur_id: '25782', bdt_codigo: 'CZ PC FD',       unidade: 'pessoa', custo_kantu: 95,  custo_direto: 0, preco_fgt: 0, preco_mercado: 125, preco_tabela_brl: 920,  avulso_kantu: true, avulso_fgt: false, notas: '' },
+  { id: 'mm-quad-1pax',       nome: 'Maras Moray Quadriciclo (1 pax)',       tipo: 'Atividade-Dia', softtur_id: '25779', bdt_codigo: 'CZ MMQ BA CM A', unidade: 'pessoa', custo_kantu: 35,  custo_direto: 0, preco_fgt: 0, preco_mercado: 70,  preco_tabela_brl: 420,  avulso_kantu: true, avulso_fgt: false, notas: 'Variante 1 pax.' },
+  { id: 'mm-quad-2pax',       nome: 'Maras Moray Quadriciclo (2 pax)',       tipo: 'Atividade-Dia', softtur_id: '25779', bdt_codigo: 'CZ MMQ BA CM B', unidade: 'pessoa', custo_kantu: 25,  custo_direto: 0, preco_fgt: 0, preco_mercado: 50,  preco_tabela_brl: 300,  avulso_kantu: true, avulso_fgt: false, notas: '2 pax no ATV.' },
+  { id: 'rainbow-quad-1pax',  nome: 'Rainbow Quadriciclo (1 pax)',           tipo: 'Atividade-Dia', softtur_id: '25566', bdt_codigo: 'CZ AIQ BA CD A', unidade: 'pessoa', custo_kantu: 75,  custo_direto: 0, preco_fgt: 0, preco_mercado: 110, preco_tabela_brl: 720,  avulso_kantu: true, avulso_fgt: false, notas: '' },
+  { id: 'rainbow-quad-2pax',  nome: 'Rainbow Quadriciclo (2 pax)',           tipo: 'Atividade-Dia', softtur_id: '25566', bdt_codigo: 'CZ AIQ BA CD B', unidade: 'pessoa', custo_kantu: 60,  custo_direto: 0, preco_fgt: 0, preco_mercado: 90,  preco_tabela_brl: 590,  avulso_kantu: true, avulso_fgt: false, notas: '' },
+  { id: 'lagunas-regular',    nome: 'Trekking 7 Lagunas Ausangate Regular',  tipo: 'Atividade-Dia', softtur_id: '25567', bdt_codigo: 'CZ LAG BA PD B', unidade: 'pessoa', custo_kantu: 38,  custo_direto: 0, preco_fgt: 0, preco_mercado: 59,  preco_tabela_brl: 370,  avulso_kantu: true, avulso_fgt: false, notas: '' },
+  { id: 'chinchero-1pax',     nome: 'Chinchero Vivencial 2D/1N (1 pax)',     tipo: 'Atividade-Dia', softtur_id: '25687', bdt_codigo: 'CZ VCH BA C2 A', unidade: 'pessoa', custo_kantu: 93,  custo_direto: 0, preco_fgt: 0, preco_mercado: 130, preco_tabela_brl: 890,  avulso_kantu: true, avulso_fgt: false, notas: '' },
+  { id: 'chinchero-2pax',     nome: 'Chinchero Vivencial 2D/1N (2+ pax)',    tipo: 'Atividade-Dia', softtur_id: '25687', bdt_codigo: 'CZ VCH BA C2 B', unidade: 'pessoa', custo_kantu: 72,  custo_direto: 0, preco_fgt: 0, preco_mercado: 110, preco_tabela_brl: 690,  avulso_kantu: true, avulso_fgt: false, notas: '' },
+
+  // -------- PACOTE-BASE (operações multi-dia sem hotel/trem/ingresso) --------
+  { id: 'base-mp-bv',         nome: 'Base MP Bate-Volta (Cusco-Ollanta-Cusco)',tipo: 'Pacote-Base', softtur_id: '25686', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 138, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 1300, avulso_kantu: false, avulso_fgt: false, notas: 'Inclui transporte + chofer + guia + bus MP. Não inclui trem, ingresso, hotel.' },
+  { id: 'base-mp-vs-2d',      nome: 'Base MP+VS 2D/1N',                      tipo: 'Pacote-Base',   softtur_id: '25685', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 196, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 1820, avulso_kantu: false, avulso_fgt: false, notas: 'Inclui operação 2 dias MP + Vale Sagrado. NÃO inclui hotel, trem, ingresso.' },
+  { id: 'base-mp-vs-ct-4d',   nome: 'Base MP+VS+CT 4D/3N',                   tipo: 'Pacote-Base',   softtur_id: '25684', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 200, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 1860, avulso_kantu: false, avulso_fgt: false, notas: 'Inclui MP + Vale Sagrado + City Tour Cusco. NÃO inclui hotel, trem, ingresso.' },
+  { id: 'base-mp-svs-ct-5d',  nome: 'Base MP+Super VS+CT 5D/4N',             tipo: 'Pacote-Base',   softtur_id: '25658', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 176, custo_kantu_avulso: 176, custo_direto: 0, preco_fgt: 0, preco_mercado: 0, preco_tabela_brl: 1680, avulso_kantu: false, avulso_fgt: false, status: 'ativo', notas: 'Inclui MP + Super VS + City Tour. NÃO inclui hotel, trem, ingresso.' },
+
+  // -------- PACOTE-BASE PRIVADO/VIP (operação exclusiva: carro + chofer + guia exclusivos) --------
+  { id: 'base-mp-bv-priv',    nome: 'Base MP-BV Privado',                    tipo: 'Pacote-Base',   softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 190, custo_kantu_avulso: 190, custo_direto: 0, preco_fgt: 0, preco_mercado: 0, preco_tabela_brl: 1800, avulso_kantu: false, avulso_fgt: false, status: 'ativo', notas: 'Calibrado: BV Comp ($138) + delta privado fixo ($52). Carro/chofer/guia exclusivos.' },
+  { id: 'base-mp-vs-3d-priv', nome: 'Base MP+VS Privado 3D/2N',              tipo: 'Pacote-Base',   softtur_id: '25654', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 342, custo_kantu_avulso: 342, custo_direto: 0, preco_fgt: 0, preco_mercado: 0, preco_tabela_brl: 3200, avulso_kantu: false, avulso_fgt: false, status: 'rascunho', notas: 'Calibrado via reverso Priv 3D 3★/4★ assumindo hotéis com tarifa AVULSA. SoftTur 25654 marcado EXCLUIR — confirmar com Marcus.' },
+  { id: 'base-mp-svs-ct-4d-priv', nome: 'Base MP+SVS+CT Privado 4D/3N',     tipo: 'Pacote-Base',   softtur_id: '25655', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0,   custo_kantu_avulso: 0,   custo_direto: 0, preco_fgt: 0, preco_mercado: 0, preco_tabela_brl: 0,    avulso_kantu: false, avulso_fgt: false, status: 'a-cadastrar', notas: 'TBD — Priv 4D 3★/4★ não fecha com nenhuma fórmula simples. Pode ter refeição premium ou ingresso Huayna Picchu embutido. Investigar com Marcus.' },
+  { id: 'base-vip-5d',        nome: 'Base VIP 5D/4N',                        tipo: 'Pacote-Base',   softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0,   custo_kantu_avulso: 0,   custo_direto: 0, preco_fgt: 0, preco_mercado: 0, preco_tabela_brl: 0,    avulso_kantu: false, avulso_fgt: false, status: 'a-cadastrar', notas: 'TBD — VIP 5D viola axioma (pacote > soma). Sem SoftTur identificado. Investigar com Marcus.' },
+
+  // -------- TREKKING MULTI-DIA (já inclui hospedagem/alimentação) --------
+  { id: 'trek-humantay-domo-2d',nome: 'Humantay com Domo 2D/1N',             tipo: 'Trekking-Multi',softtur_id: '25688', bdt_codigo: 'CZ THD CF C2 A', unidade: 'pessoa', custo_kantu: 260, custo_direto: 0, preco_fgt: 0, preco_mercado: 350, preco_tabela_brl: 2490, avulso_kantu: true,  avulso_fgt: true,  notas: 'Min 2 pax. Inclui glamping.' },
+  { id: 'trek-inca-classico-4d',nome: 'Caminho Inca Clássico 4D/3N',         tipo: 'Trekking-Multi',softtur_id: '25656', bdt_codigo: 'CZ CIC BA C4 A', unidade: 'pessoa', custo_kantu: 669, custo_direto: 0, preco_fgt: 0, preco_mercado: 960, preco_tabela_brl: 6490, avulso_kantu: true,  avulso_fgt: true,  notas: 'Permit governamental + porters + camping.' },
+  { id: 'trek-inca-curto-2d', nome: 'Caminho Inca Curto 2D/1N',              tipo: 'Trekking-Multi',softtur_id: '25657', bdt_codigo: 'CZ CIC BA C2 A', unidade: 'pessoa', custo_kantu: 489, custo_direto: 0, preco_fgt: 0, preco_mercado: 700, preco_tabela_brl: 4690, avulso_kantu: true,  avulso_fgt: true,  notas: '' },
+  { id: 'trek-salkantay-5d',  nome: 'Salkantay Clássico 5D/4N',              tipo: 'Trekking-Multi',softtur_id: '25689', bdt_codigo: 'CZ TSK BA C5 A', unidade: 'pessoa', custo_kantu: 579, custo_direto: 0, preco_fgt: 0, preco_mercado: 840, preco_tabela_brl: 5590, avulso_kantu: true,  avulso_fgt: true,  notas: '' },
+  { id: 'trek-salkantay-4d',  nome: 'Salkantay Curto 4D/3N',                 tipo: 'Trekking-Multi',softtur_id: '25691', bdt_codigo: 'CZ TSK BA C4 A', unidade: 'pessoa', custo_kantu: 549, custo_direto: 0, preco_fgt: 0, preco_mercado: 780, preco_tabela_brl: 5290, avulso_kantu: true,  avulso_fgt: true,  notas: '' },
+  { id: 'trek-choquequirao-5d',nome: 'Choquequirao 5D/4N',                   tipo: 'Trekking-Multi',softtur_id: '25690', bdt_codigo: 'CZ TCQ BA C5 A', unidade: 'pessoa', custo_kantu: 493, custo_direto: 0, preco_fgt: 0, preco_mercado: 750, preco_tabela_brl: 4790, avulso_kantu: true,  avulso_fgt: true,  notas: 'Min 2 pax.' },
+
+  // -------- TRENS (custo_kantu = NET em pacote, custo_kantu_avulso = NET avulso) --------
+  { id: 'trem-expedition',    nome: 'Trem Expedition RT (PeruRail)',         tipo: 'Trem',          softtur_id: '25571', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 115, custo_kantu_avulso: 115, custo_direto: 138, preco_fgt: 0, preco_mercado: 184, preco_tabela_brl: 1190, avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Pacote = avulso.' },
+  { id: 'trem-vistadome',     nome: 'Trem Vistadome RT (PeruRail)',          tipo: 'Trem',          softtur_id: '25571', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 149, custo_kantu_avulso: 149, custo_direto: 165, preco_fgt: 0, preco_mercado: 238, preco_tabela_brl: 1490, avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Sweet spot FGT.' },
+  { id: 'trem-observatory',   nome: 'Trem Vistadome Observatory RT',         tipo: 'Trem',          softtur_id: '25808', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 174, custo_kantu_avulso: 206, custo_direto: 215, preco_fgt: 0, preco_mercado: 330, preco_tabela_brl: 1990, avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Pacote $174 (calibrado via BV Comp Obs). Avulso $206 (-16%).' },
+  { id: 'trem-hiram',         nome: 'Trem Hiram Bingham (Belmond) RT',       tipo: 'Trem',          softtur_id: '25809', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 735, custo_kantu_avulso: 737, custo_direto: 0,   preco_fgt: 0, preco_mercado: 1179,preco_tabela_brl: 7090, avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Ultra-luxo. Pacote ≈ avulso (Belmond não dá desconto B2B significativo).' },
+  { id: 'up-trem-vistadome',  nome: 'UP Trem Expedition → Vistadome',        tipo: 'Trem',          softtur_id: '25572', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 34,  custo_kantu_avulso: 34,  custo_direto: 0, preco_fgt: 0, preco_mercado: 54,  preco_tabela_brl: 330,  avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Upgrade pós-venda.' },
+  { id: 'up-trem-observatory',nome: 'UP Trem Expedition → Observatory',      tipo: 'Trem',          softtur_id: '25573', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 57,  custo_kantu_avulso: 57,  custo_direto: 0, preco_fgt: 0, preco_mercado: 91,  preco_tabela_brl: 550,  avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Upgrade pós-venda.' },
+  { id: 'up-trem-hiram',      nome: 'UP Trem Expedition → Hiram Bingham',    tipo: 'Trem',          softtur_id: '25802', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 637, custo_kantu_avulso: 637, custo_direto: 0, preco_fgt: 0, preco_mercado: 1019,preco_tabela_brl: 6190, avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Upgrade pós-venda.' },
+
+  // -------- INGRESSOS --------
+  { id: 'ingresso-mp',        nome: 'Ingresso Adicional MP',                 tipo: 'Ingresso',      softtur_id: '25714', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 45,  custo_direto: 45, preco_fgt: 0, preco_mercado: 72,  preco_tabela_brl: 440,  avulso_kantu: true,  avulso_fgt: true,  notas: 'Tarifa oficial Mincul.' },
+  { id: 'ingresso-mp-mont',   nome: 'Ingresso Adicional MP + Montanha',      tipo: 'Ingresso',      softtur_id: '25715', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 75,  custo_direto: 75, preco_fgt: 0, preco_mercado: 120, preco_tabela_brl: 720,  avulso_kantu: true,  avulso_fgt: true,  notas: 'Huayna Picchu ou Mont. MP.' },
+  { id: 'up-ingresso-mont',   nome: 'UP Ingresso C1/C3 + Montanha',          tipo: 'Ingresso',      softtur_id: '25806', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 23,  custo_direto: 0, preco_fgt: 0, preco_mercado: 37,  preco_tabela_brl: 230,  avulso_kantu: true,  avulso_fgt: true,  notas: 'Upgrade pós-venda.' },
+
+  // -------- GUIA --------
+  { id: 'guia-mp',            nome: 'Guia Privado MP (Circ 1 ou 3)',         tipo: 'Guia',          softtur_id: '25716', bdt_codigo: '',               unidade: 'dia',    custo_kantu: 80,  custo_direto: 0, preco_fgt: 0, preco_mercado: 128, preco_tabela_brl: 770,  avulso_kantu: true,  avulso_fgt: true,  notas: '' },
+
+  // -------- HOTÉIS — Cusco (custo_kantu = NET EM PACOTE, custo_kantu_avulso = NET avulso/upgrade) --------
+  { id: 'hotel-cz-2',         nome: 'Hotel 2★ Cusco — Duplo',                tipo: 'Hotel',         softtur_id: '25669', bdt_codigo: 'CZ-Hotel Cusc 2* x2+',unidade:'noite',custo_kantu: 50,  custo_kantu_avulso: 50,  custo_direto: 0, preco_fgt: 0, preco_mercado: 39,  preco_tabela_brl: 480,  avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Pacote = avulso (2★ não tem desconto B2B significativo).' },
+  { id: 'hotel-cz-2-sgl',     nome: 'Hotel 2★ Cusco — Single',               tipo: 'Hotel',         softtur_id: '25668', bdt_codigo: 'CZ-Hotel Cusc 2* x1',unidade:'noite',custo_kantu: 50,  custo_kantu_avulso: 50,  custo_direto: 0, preco_fgt: 0, preco_mercado: 59,  preco_tabela_brl: 480,  avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: '' },
+  { id: 'hotel-cz-3',         nome: 'Hotel 3★ Cusco — Duplo',                tipo: 'Hotel',         softtur_id: '25672', bdt_codigo: 'CZ-Hotel Cusc 3* x2+',unidade:'noite',custo_kantu: 66,  custo_kantu_avulso: 86,  custo_direto: 0, preco_fgt: 0, preco_mercado: 59,  preco_tabela_brl: 830,  avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Tabela em pacote $66 (calibrado via MP+VS+CT 4D 3★). Avulso/upgrade $86.' },
+  { id: 'hotel-cz-3-sgl',     nome: 'Hotel 3★ Cusco — Single',               tipo: 'Hotel',         softtur_id: '25671', bdt_codigo: 'CZ-Hotel Cusc 3* x1',unidade:'noite',custo_kantu: 85,  custo_kantu_avulso: 85,  custo_direto: 0, preco_fgt: 0, preco_mercado: 99,  preco_tabela_brl: 820,  avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: '' },
+  { id: 'hotel-cz-4',         nome: 'Hotel 4★ Cusco — Duplo',                tipo: 'Hotel',         softtur_id: '25675', bdt_codigo: 'CZ-Hotel Cusc 4* x2+',unidade:'noite',custo_kantu: 79,  custo_kantu_avulso: 120, custo_direto: 0, preco_fgt: 0, preco_mercado: 89,  preco_tabela_brl: 1190, avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Pacote $79 vs avulso $120 — maior desconto B2B (-34%).' },
+  { id: 'hotel-cz-4-sgl',     nome: 'Hotel 4★ Cusco — Single',               tipo: 'Hotel',         softtur_id: '25674', bdt_codigo: 'CZ-Hotel Cusc 4* x1',unidade:'noite',custo_kantu: 120, custo_kantu_avulso: 120, custo_direto: 0, preco_fgt: 0, preco_mercado: 139, preco_tabela_brl: 1190, avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Abaixo da mediana mercado (P22) — trunfo.' },
+
+  // -------- HOTÉIS — Águas Calientes --------
+  { id: 'hotel-ac-2',         nome: 'Hotel 2★ AC — Duplo',                   tipo: 'Hotel',         softtur_id: '25660', bdt_codigo: 'CZ-Hotel Agc 2* x2+',unidade:'noite',custo_kantu: 50,  custo_kantu_avulso: 50,  custo_direto: 0, preco_fgt: 0, preco_mercado: 39,  preco_tabela_brl: 480,  avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: '' },
+  { id: 'hotel-ac-2-sgl',     nome: 'Hotel 2★ AC — Single',                  tipo: 'Hotel',         softtur_id: '25659', bdt_codigo: 'CZ-Hotel Agc 2* x1',unidade:'noite',custo_kantu: 50,  custo_kantu_avulso: 50,  custo_direto: 0, preco_fgt: 0, preco_mercado: 59,  preco_tabela_brl: 480,  avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: '' },
+  { id: 'hotel-ac-3',         nome: 'Hotel 3★ AC — Duplo',                   tipo: 'Hotel',         softtur_id: '25663', bdt_codigo: 'CZ-Hotel Agc 3* x2+',unidade:'noite',custo_kantu: 71,  custo_kantu_avulso: 86,  custo_direto: 0, preco_fgt: 0, preco_mercado: 59,  preco_tabela_brl: 830,  avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Tabela em pacote $71 (calibrado via MP+VS 2D 3★). Avulso $86.' },
+  { id: 'hotel-ac-3-sgl',     nome: 'Hotel 3★ AC — Single',                  tipo: 'Hotel',         softtur_id: '25662', bdt_codigo: 'CZ-Hotel Agc 3* x1',unidade:'noite',custo_kantu: 85,  custo_kantu_avulso: 85,  custo_direto: 0, preco_fgt: 0, preco_mercado: 99,  preco_tabela_brl: 820,  avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: '' },
+  { id: 'hotel-ac-4',         nome: 'Hotel 4★ AC — Duplo',                   tipo: 'Hotel',         softtur_id: '25666', bdt_codigo: 'CZ-Hotel Agc 4* x2+',unidade:'noite',custo_kantu: 82,  custo_kantu_avulso: 114, custo_direto: 0, preco_fgt: 0, preco_mercado: 99,  preco_tabela_brl: 1090, avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Tabela em pacote $82 (calibrado via MP+VS 2D 4★). Avulso $114 (-28%).' },
+  { id: 'hotel-ac-4-sgl',     nome: 'Hotel 4★ AC — Single',                  tipo: 'Hotel',         softtur_id: '25665', bdt_codigo: 'CZ-Hotel Agc 4* x1',unidade:'noite',custo_kantu: 130, custo_kantu_avulso: 130, custo_direto: 0, preco_fgt: 0, preco_mercado: 149, preco_tabela_brl: 1290, avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: '' },
+
+  // -------- HOTÉIS — Vale Sagrado (VS não tem 2★) --------
+  { id: 'hotel-vs-3',         nome: 'Hotel 3★ VS — Duplo',                   tipo: 'Hotel',         softtur_id: '25678', bdt_codigo: 'CZ-Hotel Vsg 3* x2+',unidade:'noite',custo_kantu: 86,  custo_kantu_avulso: 47,  custo_direto: 0, preco_fgt: 0, preco_mercado: 138, preco_tabela_brl: 830,  avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Tabela em pacote $86 (calibrado via MP+SVS+CT 5D 3★). Avulso $47 (SoftTur tem inconsistência aqui).' },
+  { id: 'hotel-vs-3-sgl',     nome: 'Hotel 3★ VS — Single',                  tipo: 'Hotel',         softtur_id: '25677', bdt_codigo: 'CZ-Hotel Vsg 3* x1',unidade:'noite',custo_kantu: 94,  custo_kantu_avulso: 94,  custo_direto: 0, preco_fgt: 0, preco_mercado: 139, preco_tabela_brl: 910,  avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: '' },
+  { id: 'hotel-vs-4',         nome: 'Hotel 4★ VS — Duplo',                   tipo: 'Hotel',         softtur_id: '25681', bdt_codigo: 'CZ-Hotel Vsg 4* x2+',unidade:'noite',custo_kantu: 102, custo_kantu_avulso: 57,  custo_direto: 0, preco_fgt: 0, preco_mercado: 198, preco_tabela_brl: 1190, avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Tabela em pacote $102 (calibrado via MP+SVS+CT 5D 4★).' },
+  { id: 'hotel-vs-4-sgl',     nome: 'Hotel 4★ VS — Single',                  tipo: 'Hotel',         softtur_id: '25680', bdt_codigo: 'CZ-Hotel Vsg 4* x1',unidade:'noite',custo_kantu: 130, custo_kantu_avulso: 130, custo_direto: 0, preco_fgt: 0, preco_mercado: 149, preco_tabela_brl: 1290, avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: '' },
+
+  // -------- TRANSFER --------
+  { id: 'transfer-aero',      nome: 'Transfer aeroporto ↔ hotel',            tipo: 'Transfer',      softtur_id: '',      bdt_codigo: '',               unidade: 'trecho', custo_kantu: 15,  custo_kantu_avulso: 15, custo_direto: 25, preco_fgt: 0, preco_mercado: 25,  preco_tabela_brl: 150,  avulso_kantu: false, avulso_fgt: true, status: 'ativo', notas: 'Valor estimado.' },
+
+  // ===========================================================================
+  // CAIXINHAS EM BRANCO — peças do site Kantu B2C / mercado que faltam cadastrar
+  // Preencher NET Kantu (avulso e em pacote), preço FGT, etc. Status 'a-cadastrar'.
+  // ===========================================================================
+
+  // -------- LIMA --------
+  { id: 'lima-city',          nome: 'Lima City Tour (Centro Histórico)',     tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 55,  preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: 'Half day. Praça de Armas + Convento San Francisco.' },
+  { id: 'lima-museus',        nome: 'Lima Museus (MALI / Larco)',            tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+  { id: 'lima-food-tour',     nome: 'Lima Food Tour / Cooking Class',        tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: 'Capital gastronômica.' },
+  { id: 'lima-pachacamac',    nome: 'Lima Pachacamac (sítio pré-inca)',      tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+
+  // -------- AREQUIPA --------
+  { id: 'aqp-city',           nome: 'Arequipa City Tour + Santa Catalina',   tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 50,  preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+  { id: 'aqp-mirante',        nome: 'Arequipa Mirante Yanahuara + Mistic',   tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+
+  // -------- COLCA --------
+  { id: 'colca-2d',           nome: 'Colca Canyon 2D/1N (Chivay + Cruz del Cóndor)',tipo:'Pacote-Base',softtur_id: '', bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: 'Pacote 2D inclui transporte AQP-Colca-Puno e visita ao Mirante Cruz del Cóndor.' },
+  { id: 'colca-full-day',     nome: 'Colca Canyon Full Day',                 tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+
+  // -------- PUNO / TITICACA --------
+  { id: 'titi-uros-taquile',  nome: 'Titicaca Uros + Taquile Full Day',      tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 55,  preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+  { id: 'titi-amantani-2d',   nome: 'Titicaca Amantaní 2D/1N (homestay)',    tipo: 'Pacote-Base',   softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: 'Experiência de hospedagem em família local.' },
+  { id: 'puno-sillustani',    nome: 'Sillustani Tumbas Pré-Incas',           tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+
+  // -------- ICA / PARACAS / HUACACHINA --------
+  { id: 'paracas-ballestas',  nome: 'Paracas Islas Ballestas (3h)',          tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+  { id: 'paracas-reserva',    nome: 'Paracas Reserva Nacional (Half Day)',   tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+  { id: 'huacachina-sandboard',nome: 'Huacachina Sandboarding + Buggy',      tipo: 'Aventura-Extrema',softtur_id: '',    bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 115, preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: 'Oásis no deserto. Inclui buggy + sandboard.' },
+  { id: 'ica-vinhos',         nome: 'Ica Wine & Pisco Tour',                 tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+
+  // -------- AMAZON (Puerto Maldonado / Tambopata) --------
+  { id: 'amazon-3d',          nome: 'Amazon Lodge Tambopata 3D/2N',          tipo: 'Pacote-Base',   softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: 'Inclui lodge + refeições + atividades em rio Tambopata.' },
+  { id: 'amazon-4d',          nome: 'Amazon Lodge Tambopata 4D/3N',          tipo: 'Pacote-Base',   softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+  { id: 'amazon-5d',          nome: 'Amazon Sandoval Lake 5D/4N',            tipo: 'Pacote-Base',   softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+
+  // -------- CUSCO PREMIUM / WORKSHOPS --------
+  { id: 'cz-cooking-class',   nome: 'Cusco Cooking Class',                   tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: 'CZ CC PM',       unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 99,  preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: 'Ja existe Tour Gastronômico SoftTur 25783 ($75); ver se é o mesmo.' },
+  { id: 'cz-by-night',        nome: 'Cusco by Night',                        tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+  { id: 'cz-pisco-workshop',  nome: 'Pisco Workshop Cusco',                  tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+  { id: 'cz-chocolate-ws',    nome: 'Chocolate Workshop',                    tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+  { id: 'chinchero-textile',  nome: 'Chinchero Textile Workshop',            tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: 'Workshop de tecelagem com mulheres locais.' },
+  { id: 'cz-viewpoints',      nome: 'Cusco Viewpoints (privado)',            tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 120, preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: 'Tour B2C Kantu. Premium.' },
+
+  // -------- CERIMÔNIAS ESPIRITUAIS --------
+  { id: 'ceremony-ayahuasca', nome: 'Cerimônia Ayahuasca',                   tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: 'Kantu B2C oferece; sem preço publicado.' },
+  { id: 'ceremony-san-pedro', nome: 'Cerimônia San Pedro (Wachuma)',         tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+  { id: 'ceremony-pachamama', nome: 'Cerimônia Pachamama (Despacho)',        tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+  { id: 'ceremony-florece',   nome: 'Banho de Florecimiento',                tipo: 'Atividade-Dia', softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '' },
+
+  // -------- TRENS IncaRail --------
+  { id: 'trem-voyager',       nome: 'IncaRail The Voyager RT',               tipo: 'Trem',          softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 120, preco_fgt: 0, preco_mercado: 120, preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: 'Retail IncaRail $100-140 RT.' },
+  { id: 'trem-360',           nome: 'IncaRail The 360° RT',                  tipo: 'Trem',          softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 150, preco_fgt: 0, preco_mercado: 150, preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: '' },
+  { id: 'trem-first-class',   nome: 'IncaRail First Class RT',               tipo: 'Trem',          softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 380, preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: 'Premium IncaRail.' },
+
+  // -------- VOOS DOMÉSTICOS --------
+  { id: 'voo-lim-cuz',        nome: 'Voo Lima ↔ Cusco RT (LATAM/Sky)',       tipo: 'Voo',           softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 110, preco_fgt: 0, preco_mercado: 110, preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: '$80-150 RT.' },
+  { id: 'voo-lim-aqp',        nome: 'Voo Lima ↔ Arequipa RT',                tipo: 'Voo',           softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 90, preco_fgt: 0, preco_mercado: 90,  preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: '' },
+  { id: 'voo-cuz-pem',        nome: 'Voo Cusco ↔ Puerto Maldonado',          tipo: 'Voo',           softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 100, preco_fgt: 0, preco_mercado: 100, preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: '' },
+  { id: 'voo-lim-iqt',        nome: 'Voo Lima ↔ Iquitos',                    tipo: 'Voo',           softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: 'Acesso Amazônia norte.' },
+
+  // -------- HOTÉIS FORA CUSCO --------
+  { id: 'hotel-lima-3',       nome: 'Hotel 3★ Lima — Duplo',                 tipo: 'Hotel',         softtur_id: '',      bdt_codigo: '',               unidade: 'noite',  custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: '' },
+  { id: 'hotel-lima-4',       nome: 'Hotel 4★ Lima — Duplo',                 tipo: 'Hotel',         softtur_id: '',      bdt_codigo: '',               unidade: 'noite',  custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: '' },
+  { id: 'hotel-lima-5',       nome: 'Hotel 5★ Lima — Duplo',                 tipo: 'Hotel',         softtur_id: '',      bdt_codigo: '',               unidade: 'noite',  custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: '' },
+  { id: 'hotel-aqp-3',        nome: 'Hotel 3★ Arequipa — Duplo',             tipo: 'Hotel',         softtur_id: '',      bdt_codigo: '',               unidade: 'noite',  custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: '' },
+  { id: 'hotel-aqp-4',        nome: 'Hotel 4★ Arequipa — Duplo',             tipo: 'Hotel',         softtur_id: '',      bdt_codigo: '',               unidade: 'noite',  custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: '' },
+  { id: 'hotel-puno-3',       nome: 'Hotel 3★ Puno — Duplo',                 tipo: 'Hotel',         softtur_id: '',      bdt_codigo: '',               unidade: 'noite',  custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: '' },
+  { id: 'hotel-puno-4',       nome: 'Hotel 4★ Puno — Duplo',                 tipo: 'Hotel',         softtur_id: '',      bdt_codigo: '',               unidade: 'noite',  custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: '' },
+  { id: 'hotel-ica-3',        nome: 'Hotel 3★ Ica/Paracas — Duplo',          tipo: 'Hotel',         softtur_id: '',      bdt_codigo: '',               unidade: 'noite',  custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: true, status: 'a-cadastrar', notas: '' },
+
+  // -------- TREKKINGS EXTRA --------
+  { id: 'trek-inca-jungle-3d',nome: 'Inca Jungle Trail 3D/2N',               tipo: 'Trekking-Multi',softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: 'Variante mais curta do Inca Jungle.' },
+  { id: 'trek-ausangate-5d',  nome: 'Ausangate Trek 5D/4N',                  tipo: 'Trekking-Multi',softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: '7 Lagunas + Rainbow + Ausangate.' },
+  { id: 'trek-lares-4d',      nome: 'Lares Trek 4D/3N',                      tipo: 'Trekking-Multi',softtur_id: '',      bdt_codigo: '',               unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0,   preco_tabela_brl: 0, avulso_kantu: true, avulso_fgt: false, status: 'a-cadastrar', notas: 'Trekking cultural alternativo ao Inca Trail.' }
+];
+
+// ===========================================================================
+// PACOTES PADRÃO v2 — pacotes Kantu BDT como combinação de peças atômicas
+// Cada pacote: base operacional + trem + hotel × noites + ingresso (quando aplicável)
+// Valores NET conferidos contra CSV BDT × SoftTur mai/2026
+// ===========================================================================
+const DEFAULT_PACOTES_OLD = [
+  // Day trip
+  { id: 'mp-day-trip', nome: 'Machu Picchu Day Trip', dias: 1,
+    composicao: [{peca_id:'ingresso-mp',qty:1},{peca_id:'trem-expedition-rt',qty:1},{peca_id:'bus-mp',qty:2},{peca_id:'transfer-aero',qty:2},{peca_id:'guia-priv',qty:1}],
+    preco_kantu_b2c: 298, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'Bate-volta Cusco-MP via Expedition.' },
+
+  // Pacotes MP curtos
+  { id: 'sv-mp-2d', nome: '2D Sacred Valley + MP', dias: 2,
+    composicao: [{peca_id:'sacred-valley',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-ac',qty:1},{peca_id:'transfer-aero',qty:2}],
+    preco_kantu_b2c: 393, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'Premium pequeno (+15%).' },
+
+  { id: 'mp-3d', nome: '3D Trip to Machu Picchu', dias: 3,
+    composicao: [{peca_id:'cusco-city',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-3-cusco-dbl',qty:1},{peca_id:'hotel-ac',qty:1},{peca_id:'transfer-aero',qty:2}],
+    preco_kantu_b2c: 478, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  { id: 'mp-4d', nome: '4D Machu Picchu + Cusco', dias: 4,
+    composicao: [{peca_id:'cusco-city',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'maras-moray',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-3-cusco-dbl',qty:2},{peca_id:'hotel-ac',qty:1},{peca_id:'transfer-aero',qty:2}],
+    preco_kantu_b2c: 529, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  { id: 'mp-5d', nome: '5D Machu Picchu Package', dias: 5,
+    composicao: [{peca_id:'cusco-city',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'maras-moray',qty:1},{peca_id:'humantay',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-3-cusco-dbl',qty:3},{peca_id:'hotel-ac',qty:1},{peca_id:'transfer-aero',qty:2}],
+    preco_kantu_b2c: 559, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  { id: 'rainbow-mp-6d', nome: 'Rainbow Mountain + MP 6D', dias: 6,
+    composicao: [{peca_id:'cusco-city',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'maras-moray',qty:1},{peca_id:'humantay',qty:1},{peca_id:'rainbow',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-3-cusco-dbl',qty:4},{peca_id:'hotel-ac',qty:1},{peca_id:'transfer-aero',qty:2}],
+    preco_kantu_b2c: 609, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  // Multi-cidade
+  { id: 'peru-family-8d', nome: 'Peru Family Vacation 8D', dias: 8,
+    composicao: [{peca_id:'lima-city',qty:1},{peca_id:'cusco-city',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'south-valley',qty:1},{peca_id:'humantay',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'voo-lim-cuz-rt',qty:1},{peca_id:'hotel-3-cusco-dbl',qty:5},{peca_id:'hotel-ac',qty:1},{peca_id:'transfer-aero',qty:4},{peca_id:'guia-priv',qty:3}],
+    preco_kantu_b2c: 1039, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  { id: 'magic-andes-10d', nome: 'The Magic Andes 10D', dias: 10,
+    composicao: [{peca_id:'lima-city',qty:1},{peca_id:'cusco-city',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'rainbow',qty:1},{peca_id:'titicaca',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'voo-lim-cuz-rt',qty:1},{peca_id:'hotel-3-cusco-dbl',qty:6},{peca_id:'hotel-ac',qty:2},{peca_id:'transfer-aero',qty:4},{peca_id:'guia-priv',qty:4}],
+    preco_kantu_b2c: 1216, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  { id: 'discover-south-11d', nome: 'Discover Southern Peru 11D', dias: 11,
+    composicao: [{peca_id:'lima-city',qty:1},{peca_id:'arequipa-city',qty:1},{peca_id:'colca',qty:1},{peca_id:'titicaca',qty:1},{peca_id:'cusco-city',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'rainbow',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'voo-lim-aqp-rt',qty:1},{peca_id:'voo-lim-cuz-rt',qty:1},{peca_id:'hotel-3-cusco-dbl',qty:7},{peca_id:'hotel-ac',qty:2},{peca_id:'transfer-aero',qty:6},{peca_id:'guia-priv',qty:5}],
+    preco_kantu_b2c: 1510, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  { id: 'cusco-adventure-8d', nome: 'Cusco Adventure Tour 8D', dias: 8,
+    composicao: [{peca_id:'atv-maras',qty:1},{peca_id:'pisaq',qty:1},{peca_id:'rafting',qty:1},{peca_id:'rainbow',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-3-cusco-dbl',qty:5},{peca_id:'hotel-ac',qty:1},{peca_id:'transfer-aero',qty:2},{peca_id:'guia-priv',qty:3}],
+    preco_kantu_b2c: 1523, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'Inclui ATV, rafting, zipline (não cobertos por tours avulsos).' },
+
+  { id: 'peru-travel-12d', nome: 'Peru Travel 12D', dias: 12,
+    composicao: [{peca_id:'lima-city',qty:1},{peca_id:'huacachina',qty:1},{peca_id:'amazon-lodge',qty:1},{peca_id:'cusco-city',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'rainbow',qty:1},{peca_id:'humantay',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'voo-lim-cuz-rt',qty:1},{peca_id:'voo-cuz-pem',qty:1},{peca_id:'hotel-3-cusco-dbl',qty:7},{peca_id:'hotel-ac',qty:2},{peca_id:'transfer-aero',qty:6},{peca_id:'guia-priv',qty:6}],
+    preco_kantu_b2c: 2195, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  { id: 'peru-travel-20d', nome: 'Peru Travel 20D', dias: 20,
+    composicao: [{peca_id:'lima-city',qty:1},{peca_id:'huacachina',qty:1},{peca_id:'amazon-lodge',qty:1},{peca_id:'cusco-city',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'south-valley',qty:1},{peca_id:'rainbow',qty:1},{peca_id:'titicaca',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'voo-lim-cuz-rt',qty:1},{peca_id:'voo-cuz-pem',qty:1},{peca_id:'hotel-3-cusco-dbl',qty:13},{peca_id:'hotel-ac',qty:2},{peca_id:'transfer-aero',qty:8},{peca_id:'guia-priv',qty:10}],
+    preco_kantu_b2c: 2854, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  // Trekkings
+  { id: 'humantay-2d', nome: 'Humantay Lake 2D Trek', dias: 2,
+    composicao: [{peca_id:'humantay',qty:1},{peca_id:'transfer-aero',qty:1},{peca_id:'guia-priv',qty:2}],
+    preco_kantu_b2c: 280, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'Inclui domo/glamping (SoftTur 25688).' },
+
+  { id: 'short-inca-trail', nome: 'Short Inca Trail 2D', dias: 2,
+    composicao: [{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-ac',qty:1},{peca_id:'transfer-aero',qty:1},{peca_id:'guia-priv',qty:2}],
+    preco_kantu_b2c: 590, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'Permit governamental incluso.' },
+
+  { id: 'inca-jungle-4d', nome: 'Inca Jungle Trail 4D', dias: 4,
+    composicao: [{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-ac',qty:3},{peca_id:'transfer-aero',qty:1},{peca_id:'guia-priv',qty:4}],
+    preco_kantu_b2c: 499, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  { id: 'salkantay-4d', nome: 'Salkantay Trek 4D', dias: 4,
+    composicao: [{peca_id:'sacred-valley',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-ac',qty:3},{peca_id:'transfer-aero',qty:1},{peca_id:'guia-priv',qty:4}],
+    preco_kantu_b2c: 599, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  { id: 'salkantay-5d', nome: 'Salkantay Trek 5D', dias: 5,
+    composicao: [{peca_id:'sacred-valley',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-ac',qty:4},{peca_id:'transfer-aero',qty:1},{peca_id:'guia-priv',qty:5}],
+    preco_kantu_b2c: 649, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  { id: 'humantay-mp-7d', nome: 'Humantay Lake to MP 7D', dias: 7,
+    composicao: [{peca_id:'humantay',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'maras-moray',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-3-cusco-dbl',qty:4},{peca_id:'hotel-ac',qty:2},{peca_id:'transfer-aero',qty:2},{peca_id:'guia-priv',qty:5}],
+    preco_kantu_b2c: 669, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  { id: 'classic-inca-trail', nome: 'Classic Inca Trail 4D', dias: 4,
+    composicao: [{peca_id:'mp-day-package',qty:1},{peca_id:'transfer-aero',qty:1},{peca_id:'guia-priv',qty:4}],
+    preco_kantu_b2c: 890, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'Permit governamental + porters + camping.' },
+
+  // Luxury
+  { id: 'deluxe-mp-3d', nome: 'Deluxe Tour Cusco-MP 3D', dias: 3,
+    composicao: [{peca_id:'cusco-city',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-4-cusco-dbl',qty:1},{peca_id:'hotel-ac',qty:1},{peca_id:'transfer-aero',qty:2},{peca_id:'guia-priv',qty:2}],
+    preco_kantu_b2c: 719, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'Hotel 4★ + trem Vistadome.' },
+
+  { id: 'luxury-mp-4d', nome: 'Luxury MP Private 4D', dias: 4,
+    composicao: [{peca_id:'cusco-city',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'maras-moray',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-4-cusco-dbl',qty:2},{peca_id:'hotel-ac',qty:1},{peca_id:'transfer-aero',qty:2},{peca_id:'guia-priv',qty:3}],
+    preco_kantu_b2c: 909, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  { id: 'exclusive-mp-5d', nome: 'Exclusive Private MP 5D', dias: 5,
+    composicao: [{peca_id:'cusco-city',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'maras-moray',qty:1},{peca_id:'humantay',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-4-cusco-dbl',qty:3},{peca_id:'hotel-ac',qty:1},{peca_id:'transfer-aero',qty:2},{peca_id:'guia-priv',qty:4}],
+    preco_kantu_b2c: 1085, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  { id: 'luxury-mp-6d', nome: 'Luxury MP 6D', dias: 6,
+    composicao: [{peca_id:'cusco-city',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'maras-moray',qty:1},{peca_id:'rainbow',qty:1},{peca_id:'humantay',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-4-cusco-dbl',qty:4},{peca_id:'hotel-ac',qty:1},{peca_id:'transfer-aero',qty:2},{peca_id:'guia-priv',qty:5}],
+    preco_kantu_b2c: 1142, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' },
+
+  { id: 'exclusive-mp-7d', nome: 'Exclusive MP 7D', dias: 7,
+    composicao: [{peca_id:'cusco-city',qty:1},{peca_id:'sacred-valley',qty:1},{peca_id:'maras-moray',qty:1},{peca_id:'rainbow',qty:1},{peca_id:'humantay',qty:1},{peca_id:'mp-day-package',qty:1},{peca_id:'hotel-4-cusco-dbl',qty:5},{peca_id:'hotel-ac',qty:1},{peca_id:'transfer-aero',qty:2},{peca_id:'guia-priv',qty:6}],
+    preco_kantu_b2c: 1329, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: '' }
+];
+
+// ===========================================================================
+// PACOTES v2 — Kantu BDT compostos por peças atômicas
+// ===========================================================================
+const DEFAULT_PACOTES = [
+  // --------- MP BATE-VOLTA (1 dia) ---------
+  { id: 'mp-bv-exp', nome: 'MP BV Compartilhado Trem Expedition', bdt_codigo: 'CZ MPC BA CD A', dias: 1,
+    composicao: [{peca_id:'base-mp-bv',qty:1},{peca_id:'trem-expedition',qty:1},{peca_id:'ingresso-mp',qty:1}],
+    custo_kantu_pacote: 253, preco_kantu_b2c: 380, preco_tabela_brl: 2490,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'NET = $138 base + $115 Expedition. Conferido vs CSV ($253 ✓). Ingresso pode estar embutido na base.' },
+  { id: 'mp-bv-vis', nome: 'MP BV Compartilhado Trem Vistadome', bdt_codigo: 'CZ MPC CF CD A', dias: 1,
+    composicao: [{peca_id:'base-mp-bv',qty:1},{peca_id:'trem-vistadome',qty:1},{peca_id:'ingresso-mp',qty:1}],
+    custo_kantu_pacote: 287, preco_kantu_b2c: 440, preco_tabela_brl: 2790,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'NET = $138 + $149 = $287 ✓.' },
+  { id: 'mp-bv-obs', nome: 'MP BV Compartilhado Trem Observatory', bdt_codigo: 'CZ MPC CF CD B', dias: 1,
+    composicao: [{peca_id:'base-mp-bv',qty:1},{peca_id:'trem-observatory',qty:1},{peca_id:'ingresso-mp',qty:1}],
+    custo_kantu_pacote: 312, preco_kantu_b2c: 480, preco_tabela_brl: 2990,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'NET soma = $344 mas CSV diz $312 — desconto Kantu de $32 na classe premium.' },
+  { id: 'mp-bv-priv-exp', nome: 'MP BV Privado Trem Expedition', bdt_codigo: 'CZ MPC BA PD A', dias: 1,
+    composicao: [{peca_id:'base-mp-bv',qty:1},{peca_id:'trem-expedition',qty:1},{peca_id:'ingresso-mp',qty:1},{peca_id:'guia-mp',qty:1}],
+    custo_kantu_pacote: 305, preco_kantu_b2c: 450, preco_tabela_brl: 2990,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'Privado = base + trem + guia privado. Soma teórica $138+$115+$80=$333; CSV diz $305 (desconto pacote).' },
+  { id: 'mp-bv-priv-vis', nome: 'MP BV Privado Trem Vistadome', bdt_codigo: 'CZ MPC CF PD A', dias: 1,
+    composicao: [{peca_id:'base-mp-bv',qty:1},{peca_id:'trem-vistadome',qty:1},{peca_id:'ingresso-mp',qty:1},{peca_id:'guia-mp',qty:1}],
+    custo_kantu_pacote: 340, preco_kantu_b2c: 490, preco_tabela_brl: 3290,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0, notas: '' },
+  { id: 'mp-bv-priv-obs', nome: 'MP BV Privado Trem Observatory', bdt_codigo: 'CZ MPC CF PD B', dias: 1,
+    composicao: [{peca_id:'base-mp-bv',qty:1},{peca_id:'trem-observatory',qty:1},{peca_id:'ingresso-mp',qty:1},{peca_id:'guia-mp',qty:1}],
+    custo_kantu_pacote: 363, preco_kantu_b2c: 520, preco_tabela_brl: 3490,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0, notas: '' },
+  { id: 'mp-bv-priv-hir', nome: 'MP BV Privado Trem Hiram Bingham', bdt_codigo: 'CZ MCP VP PD A', dias: 1,
+    composicao: [{peca_id:'base-mp-bv',qty:1},{peca_id:'trem-hiram',qty:1},{peca_id:'ingresso-mp',qty:1},{peca_id:'guia-mp',qty:1}],
+    custo_kantu_pacote: 925, preco_kantu_b2c: 1200, preco_tabela_brl: 8880,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0, notas: '' },
+
+  // --------- MP + VS 2D/1N ---------
+  { id: 'mp-vs-2d-h2', nome: 'MP+VS 2D/1N Hotel 2★', bdt_codigo: 'CZ MVS BA C2 A', dias: 2,
+    composicao: [{peca_id:'base-mp-vs-2d',qty:1},{peca_id:'hotel-ac-2',qty:1},{peca_id:'trem-expedition',qty:1},{peca_id:'ingresso-mp',qty:1}],
+    custo_kantu_pacote: 361, preco_kantu_b2c: 530, preco_tabela_brl: 3490,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'NET = $196 base + $50 hotel + $115 trem = $361 ✓ EXATO.' },
+  { id: 'mp-vs-2d-h3', nome: 'MP+VS 2D/1N Hotel 3★', bdt_codigo: 'CZ MVS CF C2 A', dias: 2,
+    composicao: [{peca_id:'base-mp-vs-2d',qty:1},{peca_id:'hotel-ac-3',qty:1},{peca_id:'trem-expedition',qty:1},{peca_id:'ingresso-mp',qty:1}],
+    custo_kantu_pacote: 382, preco_kantu_b2c: 550, preco_tabela_brl: 3690,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'Soma teórica $397; CSV $382 — Kantu absorve $15 na up de hotel 3★.' },
+  { id: 'mp-vs-2d-h4', nome: 'MP+VS 2D/1N Hotel 4★', bdt_codigo: 'CZ MVS VP C2 A', dias: 2,
+    composicao: [{peca_id:'base-mp-vs-2d',qty:1},{peca_id:'hotel-ac-4',qty:1},{peca_id:'trem-expedition',qty:1},{peca_id:'ingresso-mp',qty:1}],
+    custo_kantu_pacote: 393, preco_kantu_b2c: 580, preco_tabela_brl: 3790,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'Soma $425; CSV $393 — Kantu absorve $32.' },
+
+  // --------- MP+VS+CT 4D/3N ---------
+  { id: 'mp-vs-ct-4d-h2', nome: 'MP+VS+CT 4D/3N Hotel 2★', bdt_codigo: 'CZ MVC BA C4 A', dias: 4,
+    composicao: [{peca_id:'base-mp-vs-ct-4d',qty:1},{peca_id:'hotel-cz-2',qty:2},{peca_id:'hotel-ac-2',qty:1},{peca_id:'trem-expedition',qty:1},{peca_id:'ingresso-mp',qty:1}],
+    custo_kantu_pacote: 465, preco_kantu_b2c: 690, preco_tabela_brl: 4490,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'NET = $200 + 2×$50 (CZ 2★) + 1×$50 (AC 2★) + $115 trem = $465 ✓ EXATO.' },
+  { id: 'mp-vs-ct-4d-h3', nome: 'MP+VS+CT 4D/3N Hotel 3★', bdt_codigo: 'CZ MVC CF C4 A', dias: 4,
+    composicao: [{peca_id:'base-mp-vs-ct-4d',qty:1},{peca_id:'hotel-cz-3',qty:2},{peca_id:'hotel-ac-3',qty:1},{peca_id:'trem-expedition',qty:1},{peca_id:'ingresso-mp',qty:1}],
+    custo_kantu_pacote: 518, preco_kantu_b2c: 760, preco_tabela_brl: 4990,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'Soma $573 (200+172+86+115); CSV $518 — Kantu absorve $55.' },
+  { id: 'mp-vs-ct-4d-h4', nome: 'MP+VS+CT 4D/3N Hotel 4★', bdt_codigo: 'CZ MVC VP C4 A', dias: 4,
+    composicao: [{peca_id:'base-mp-vs-ct-4d',qty:1},{peca_id:'hotel-cz-4',qty:2},{peca_id:'hotel-ac-4',qty:1},{peca_id:'trem-expedition',qty:1},{peca_id:'ingresso-mp',qty:1}],
+    custo_kantu_pacote: 555, preco_kantu_b2c: 820, preco_tabela_brl: 5390,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'Soma $669; CSV $555 — diferença pode indicar hotel "duplo" cobrado diferente em pacote.' },
+
+  // --------- MP+Super VS+CT 5D/4N ---------
+  { id: 'mp-svs-ct-5d-h2', nome: 'MP+Super VS+CT 5D/4N Hotel 2★', bdt_codigo: 'CZ MSS BA C5 A', dias: 5,
+    composicao: [{peca_id:'base-mp-svs-ct-5d',qty:1},{peca_id:'hotel-cz-2',qty:2},{peca_id:'hotel-ac-2',qty:1},{peca_id:'hotel-vs-3',qty:1},{peca_id:'trem-expedition',qty:1},{peca_id:'ingresso-mp',qty:1}],
+    custo_kantu_pacote: 491, preco_kantu_b2c: 730, preco_tabela_brl: 4790,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'CSV: VS não tem 2★, usa 3★. Soma $176+100+50+47+115 = $488; CSV $491 ✓ próximo.' },
+  { id: 'mp-svs-ct-5d-h3', nome: 'MP+Super VS+CT 5D/4N Hotel 3★', bdt_codigo: 'CZ MSS CF C5 A', dias: 5,
+    composicao: [{peca_id:'base-mp-svs-ct-5d',qty:1},{peca_id:'hotel-cz-3',qty:2},{peca_id:'hotel-ac-3',qty:1},{peca_id:'hotel-vs-3',qty:1},{peca_id:'trem-expedition',qty:1},{peca_id:'ingresso-mp',qty:1}],
+    custo_kantu_pacote: 580, preco_kantu_b2c: 860, preco_tabela_brl: 5590,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0, notas: '' },
+  { id: 'mp-svs-ct-5d-h4', nome: 'MP+Super VS+CT 5D/4N Hotel 4★', bdt_codigo: 'CZ MSS VP C5 A', dias: 5,
+    composicao: [{peca_id:'base-mp-svs-ct-5d',qty:1},{peca_id:'hotel-cz-4',qty:2},{peca_id:'hotel-ac-4',qty:1},{peca_id:'hotel-vs-4',qty:1},{peca_id:'trem-expedition',qty:1},{peca_id:'ingresso-mp',qty:1}],
+    custo_kantu_pacote: 633, preco_kantu_b2c: 940, preco_tabela_brl: 6090,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0, notas: '' },
+
+  // --------- Pacotes PRIVADOS / VIP — usam Bases Privadas (hotéis com tarifa AVULSA, não pacote) ---------
+  { id: 'mp-vs-priv-3d-h3', nome: 'MP+VS Privado 3D/2N Hotel 3★', bdt_codigo: 'CZ MVP CF P3 A', dias: 3,
+    composicao: [{peca_id:'base-mp-vs-3d-priv',qty:1},{peca_id:'hotel-cz-3',qty:1},{peca_id:'hotel-ac-3',qty:1},{peca_id:'trem-expedition',qty:1}],
+    custo_kantu_pacote: 633, preco_kantu_b2c: 930, preco_tabela_brl: 6090,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'Base Priv 3D ($342) + 2 noites hotel pacote 3★ ($66+$71) + Trem Exp ($115) = $594. Diff $39 — verificar.' },
+  { id: 'mp-vs-priv-3d-h4', nome: 'MP+VS Privado 3D/2N Hotel 4★', bdt_codigo: 'CZ MVP VP P3 A', dias: 3,
+    composicao: [{peca_id:'base-mp-vs-3d-priv',qty:1},{peca_id:'hotel-cz-4',qty:1},{peca_id:'hotel-ac-4',qty:1},{peca_id:'trem-expedition',qty:1}],
+    custo_kantu_pacote: 688, preco_kantu_b2c: 970, preco_tabela_brl: 6690,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'Base Priv 3D + Hotel pacote 4★ — pode estar usando hotéis "avulso" no Privado.' },
+  { id: 'mp-svs-priv-4d-h3', nome: 'MP+Super VS Privado 4D/3N Hotel 3★', bdt_codigo: 'CZ MVP CF P4 A', dias: 4,
+    composicao: [{peca_id:'base-mp-svs-ct-4d-priv',qty:1},{peca_id:'hotel-cz-3',qty:2},{peca_id:'hotel-ac-3',qty:1},{peca_id:'trem-expedition',qty:1}],
+    custo_kantu_pacote: 790, preco_kantu_b2c: 1100, preco_tabela_brl: 7590,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'TBD — Base Priv 4D não calibrada. Pacote $790 não fecha com fórmula simples.' },
+  { id: 'mp-svs-priv-4d-h4', nome: 'MP+Super VS Privado 4D/3N Hotel 4★', bdt_codigo: 'CZ MVP VP P4 A', dias: 4,
+    composicao: [{peca_id:'base-mp-svs-ct-4d-priv',qty:1},{peca_id:'hotel-cz-4',qty:2},{peca_id:'hotel-ac-4',qty:1},{peca_id:'trem-expedition',qty:1}],
+    custo_kantu_pacote: 966, preco_kantu_b2c: 1250, preco_tabela_brl: 9290,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'TBD — viola axioma pacote ≤ soma. Investigar.' },
+  { id: 'mp-svs-ct-vip-5d-h3', nome: 'MP+Super VS+CT VIP 5D/4N Hotel 3★', bdt_codigo: 'CZ MVP CF P5 A', dias: 5,
+    composicao: [{peca_id:'base-vip-5d',qty:1},{peca_id:'hotel-cz-3',qty:2},{peca_id:'hotel-ac-3',qty:1},{peca_id:'hotel-vs-3',qty:1},{peca_id:'trem-expedition',qty:1}],
+    custo_kantu_pacote: 956, preco_kantu_b2c: 1400, preco_tabela_brl: 9190,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'TBD — Base VIP 5D não calibrada. Viola axioma. Investigar com Marcus.' },
+  { id: 'mp-svs-ct-vip-5d-h4', nome: 'MP+Super VS+CT VIP 5D/4N Hotel 4★', bdt_codigo: 'CZ MVP VP P5 A', dias: 5,
+    composicao: [{peca_id:'base-vip-5d',qty:1},{peca_id:'hotel-cz-4',qty:2},{peca_id:'hotel-ac-4',qty:1},{peca_id:'hotel-vs-4',qty:1},{peca_id:'trem-expedition',qty:1}],
+    custo_kantu_pacote: 1064, preco_kantu_b2c: 1500, preco_tabela_brl: 10290,
+    preco_fgt_pacote: 0, custo_fgt_pacote: 0,
+    notas: 'TBD — viola axioma. Pode ter ingresso Huayna Picchu ou refeição premium embutida.' }
+];
+
+// ===========================================================================
+// ESTADO / PERSISTÊNCIA
+// ===========================================================================
+const STORAGE_KEY = 'lego-pacotes-fgt-v3';
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      // Migração defensiva: garantir campos novos em peças antigas
+      if (data.pecas) data.pecas.forEach(p => {
+        if (p.custo_kantu_avulso === undefined) p.custo_kantu_avulso = p.custo_kantu || 0;
+        if (!p.status) p.status = 'ativo';
+        if (p.softtur_id === undefined) p.softtur_id = '';
+        if (p.bdt_codigo === undefined) p.bdt_codigo = '';
+        if (p.preco_tabela_brl === undefined) p.preco_tabela_brl = 0;
+      });
+      return data;
+    }
+  } catch (e) { console.warn('loadState error', e); }
+  return { pecas: DEFAULT_PECAS.map(p => ({status: 'ativo', custo_kantu_avulso: p.custo_kantu, ...p})), pacotes: DEFAULT_PACOTES.map(p => ({...p, composicao: p.composicao.map(c=>({...c}))})), selectedPacoteId: null };
+}
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function resetData() {
+  if (!confirm('Resetar TODOS os dados ao padrão? Suas edições serão perdidas.')) return;
+  state = { pecas: DEFAULT_PECAS.map(p => ({status: 'ativo', custo_kantu_avulso: p.custo_kantu, ...p})), pacotes: DEFAULT_PACOTES.map(p => ({...p, composicao: p.composicao.map(c=>({...c}))})), selectedPacoteId: null };
+  saveState(); render();
+  toast('Dados resetados ao padrão.');
+}
+function exportData() {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `lego-pacotes-fgt-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('JSON exportado.');
+}
+function importData(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.pecas || !data.pacotes) throw new Error('Estrutura inválida');
+      state = data;
+      saveState(); render();
+      toast('JSON importado com sucesso.');
+    } catch (err) { alert('Erro ao importar: ' + err.message); }
+  };
+  reader.readAsText(f);
+}
+
+// ===========================================================================
+// CÁLCULOS
+// ===========================================================================
+function getPeca(id) { return state.pecas.find(p => p.id === id); }
+function fmt(n) { return n.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0}); }
+function fmtPct(n) { return (n >= 0 ? '+' : '') + n.toFixed(0) + '%'; }
+
+function calcPacote(pacote) {
+  let soma_custo_kantu = 0, soma_custo_direto = 0, soma_preco_fgt = 0, soma_preco_mercado = 0;
+  for (const item of (pacote.composicao || [])) {
+    const peca = getPeca(item.peca_id);
+    if (!peca) continue;
+    soma_custo_kantu   += (peca.custo_kantu   || 0) * item.qty;
+    soma_custo_direto  += (peca.custo_direto  || 0) * item.qty;
+    soma_preco_fgt     += (peca.preco_fgt     || 0) * item.qty;
+    soma_preco_mercado += (peca.preco_mercado || 0) * item.qty;
+  }
+  return {
+    soma_custo_kantu, soma_custo_direto, soma_preco_fgt, soma_preco_mercado,
+    delta_kantu_mercado: (pacote.preco_kantu_b2c || 0) - soma_preco_mercado,
+    delta_pct_kantu_mercado: soma_preco_mercado > 0 ? ((pacote.preco_kantu_b2c - soma_preco_mercado) / soma_preco_mercado * 100) : 0,
+    delta_fgt: (pacote.preco_fgt_pacote || 0) - soma_preco_fgt,
+    delta_pct_fgt: soma_preco_fgt > 0 ? ((pacote.preco_fgt_pacote - soma_preco_fgt) / soma_preco_fgt * 100) : 0,
+    margem_fgt: (pacote.preco_fgt_pacote || 0) - (pacote.custo_fgt_pacote || 0),
+    margem_pct_fgt: (pacote.custo_fgt_pacote || 0) > 0 ? (((pacote.preco_fgt_pacote || 0) - pacote.custo_fgt_pacote) / pacote.custo_fgt_pacote * 100) : 0,
+    delta_custo_kantu: (pacote.custo_kantu_pacote || 0) - soma_custo_kantu
+  };
+}
+
+// ===========================================================================
+// RENDERIZAÇÃO — TABS
+// ===========================================================================
+function renderDashboard() {
+  const el = document.getElementById('tab-dashboard');
+  const totalPecas = state.pecas.length;
+  const totalPacotes = state.pacotes.length;
+  const pecasAvulsoKantu = state.pecas.filter(p => p.avulso_kantu).length;
+  const pecasAvulsoFgt = state.pecas.filter(p => p.avulso_fgt).length;
+  const pacotesComPreco = state.pacotes.filter(p => p.preco_kantu_b2c > 0).length;
+  const pacotesComFgt = state.pacotes.filter(p => p.preco_fgt_pacote > 0).length;
+
+  // somatórios para ranking
+  const pacotesCalc = state.pacotes.map(p => ({...p, calc: calcPacote(p)}));
+  const premiumOrdered = pacotesCalc.filter(p => p.preco_kantu_b2c > 0 && p.calc.soma_preco_mercado > 0)
+    .sort((a,b) => b.calc.delta_pct_kantu_mercado - a.calc.delta_pct_kantu_mercado);
+  const top5 = premiumOrdered.slice(0, 5);
+  const bot5 = premiumOrdered.slice(-5).reverse();
+
+  let html = `
+    <div class="dashboard-grid">
+      <div class="metric-card"><div class="label">Peças cadastradas</div><div class="value">${totalPecas}</div><div class="sub">${pecasAvulsoKantu} vendidas avulsas por Kantu · ${pecasAvulsoFgt} pela FGT</div></div>
+      <div class="metric-card"><div class="label">Pacotes</div><div class="value">${totalPacotes}</div><div class="sub">${pacotesComPreco} com preço Kantu · ${pacotesComFgt} com preço FGT</div></div>
+      <div class="metric-card"><div class="label">Prêmio médio Kantu</div><div class="value">${premiumOrdered.length ? fmtPct(premiumOrdered.reduce((s,p)=>s+p.calc.delta_pct_kantu_mercado,0)/premiumOrdered.length) : '—'}</div><div class="sub">B2C Kantu vs soma das peças avulsas</div></div>
+      <div class="metric-card"><div class="label">Pacote mais caro</div><div class="value">$${pacotesCalc.length ? fmt(Math.max(...pacotesCalc.map(p=>p.preco_kantu_b2c))) : '—'}</div><div class="sub">${pacotesCalc.sort((a,b)=>b.preco_kantu_b2c-a.preco_kantu_b2c)[0]?.nome || ''}</div></div>
+    </div>
+
+    <div class="dashboard-section">
+      <h3>Top 5 pacotes com maior prêmio de curadoria (Kantu B2C vs soma)</h3>
+      <table>
+        <thead><tr><th>Pacote</th><th>Dias</th><th class="numeric">Preço Kantu</th><th class="numeric">Soma peças</th><th class="numeric">Delta US$</th><th class="numeric">Delta %</th></tr></thead>
+        <tbody>
+          ${top5.map(p => `
+            <tr>
+              <td>${p.nome}</td>
+              <td>${p.dias}</td>
+              <td class="numeric">$${fmt(p.preco_kantu_b2c)}</td>
+              <td class="numeric">$${fmt(p.calc.soma_preco_mercado)}</td>
+              <td class="numeric">$${fmt(p.calc.delta_kantu_mercado)}</td>
+              <td class="numeric">${fmtPct(p.calc.delta_pct_kantu_mercado)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="dashboard-section">
+      <h3>Pacotes com menor prêmio — onde a Kantu tem menor cushion comercial</h3>
+      <table>
+        <thead><tr><th>Pacote</th><th>Dias</th><th class="numeric">Preço Kantu</th><th class="numeric">Soma peças</th><th class="numeric">Delta US$</th><th class="numeric">Delta %</th></tr></thead>
+        <tbody>
+          ${bot5.map(p => `
+            <tr>
+              <td>${p.nome}</td>
+              <td>${p.dias}</td>
+              <td class="numeric">$${fmt(p.preco_kantu_b2c)}</td>
+              <td class="numeric">$${fmt(p.calc.soma_preco_mercado)}</td>
+              <td class="numeric">$${fmt(p.calc.delta_kantu_mercado)}</td>
+              <td class="numeric">${fmtPct(p.calc.delta_pct_kantu_mercado)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="dashboard-section">
+      <h3>Próximos passos</h3>
+      <p class="help-text">
+        Vá em <strong>Peças</strong> para preencher os custos NET Kantu e preços FGT que ainda estão zerados. Depois em <strong>Pacotes</strong> para preencher <code>preço FGT</code> e <code>custo FGT</code> em cada pacote — assim o sistema calcula margens reais. Os dados ficam salvos no navegador automaticamente; use <em>Exportar JSON</em> para backup.
+      </p>
+    </div>
+  `;
+  el.innerHTML = html;
+}
+
+function renderPecas() {
+  const el = document.getElementById('tab-pecas');
+  const search = (window._pecaSearch || '').toLowerCase();
+  const tipoFilter = window._pecaTipoFilter || '';
+  const statusFilter = window._pecaStatusFilter || '';
+  const tipos = ['Atividade-Dia','Pacote-Base','Trekking-Multi','Trem','Hotel','Ingresso','Guia','Transfer','Voo','Outro'];
+  const filtered = state.pecas.filter(p => {
+    if (search && !p.nome.toLowerCase().includes(search) && !p.id.toLowerCase().includes(search)) return false;
+    if (tipoFilter && p.tipo !== tipoFilter) return false;
+    if (statusFilter && (p.status||'ativo') !== statusFilter) return false;
+    return true;
+  });
+  const countAtivo = state.pecas.filter(p => (p.status||'ativo') === 'ativo').length;
+  const countRascunho = state.pecas.filter(p => p.status === 'rascunho').length;
+  const countCadastrar = state.pecas.filter(p => p.status === 'a-cadastrar').length;
+  el.innerHTML = `
+    <div class="controls-row">
+      <input class="search-input" placeholder="Buscar peça..." value="${search}" oninput="window._pecaSearch=this.value; renderPecas()" />
+      <select onchange="window._pecaTipoFilter=this.value; renderPecas()">
+        <option value="">Todos os tipos</option>
+        ${tipos.map(t => `<option value="${t}" ${tipoFilter===t?'selected':''}>${t}</option>`).join('')}
+      </select>
+      <select onchange="window._pecaStatusFilter=this.value; renderPecas()">
+        <option value="">Todos status</option>
+        <option value="ativo" ${statusFilter==='ativo'?'selected':''}>Ativo (${countAtivo})</option>
+        <option value="rascunho" ${statusFilter==='rascunho'?'selected':''}>Rascunho (${countRascunho})</option>
+        <option value="a-cadastrar" ${statusFilter==='a-cadastrar'?'selected':''}>A cadastrar (${countCadastrar})</option>
+      </select>
+      <button class="primary" onclick="addPeca()">+ Nova peça</button>
+      <span class="help-text" style="margin-left:auto">${filtered.length} de ${state.pecas.length} peças</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:170px">Nome</th>
+          <th style="width:120px">Tipo</th>
+          <th style="width:75px">Status</th>
+          <th style="width:70px">SoftTur</th>
+          <th style="width:100px">BDT código</th>
+          <th style="width:65px">Unidade</th>
+          <th class="numeric" style="width:75px" title="NET usado em montagem de pacote">NET pacote</th>
+          <th class="numeric" style="width:75px" title="NET avulso/upgrade pós-venda">NET avulso</th>
+          <th class="numeric" style="width:75px">Custo Direto</th>
+          <th class="numeric" style="width:75px">Preço FGT</th>
+          <th class="numeric" style="width:75px">Preço Mercado</th>
+          <th class="numeric" style="width:75px">Tabela BRL</th>
+          <th style="width:42px">Av. KT</th>
+          <th style="width:42px">Av. FGT</th>
+          <th>Notas</th>
+          <th style="width:36px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map(p => `
+          <tr>
+            <td><input value="${p.nome}" onchange="updatePeca('${p.id}','nome',this.value)" /></td>
+            <td>
+              <select onchange="updatePeca('${p.id}','tipo',this.value)">
+                ${tipos.map(t => `<option value="${t}" ${p.tipo===t?'selected':''}>${t}</option>`).join('')}
+              </select>
+            </td>
+            <td>
+              <select onchange="updatePeca('${p.id}','status',this.value)">
+                <option value="ativo" ${(p.status||'ativo')==='ativo'?'selected':''}>Ativo</option>
+                <option value="rascunho" ${p.status==='rascunho'?'selected':''}>Rascunho</option>
+                <option value="a-cadastrar" ${p.status==='a-cadastrar'?'selected':''}>A cadastrar</option>
+              </select>
+            </td>
+            <td><input value="${p.softtur_id||''}" onchange="updatePeca('${p.id}','softtur_id',this.value)" /></td>
+            <td><input value="${p.bdt_codigo||''}" onchange="updatePeca('${p.id}','bdt_codigo',this.value)" /></td>
+            <td><input value="${p.unidade}" onchange="updatePeca('${p.id}','unidade',this.value)" /></td>
+            <td><input type="number" min="0" step="1" value="${p.custo_kantu||0}" onchange="updatePeca('${p.id}','custo_kantu',+this.value)" /></td>
+            <td><input type="number" min="0" step="1" value="${p.custo_kantu_avulso||0}" onchange="updatePeca('${p.id}','custo_kantu_avulso',+this.value)" /></td>
+            <td><input type="number" min="0" step="1" value="${p.custo_direto||0}" onchange="updatePeca('${p.id}','custo_direto',+this.value)" /></td>
+            <td><input type="number" min="0" step="1" value="${p.preco_fgt||0}" onchange="updatePeca('${p.id}','preco_fgt',+this.value)" /></td>
+            <td><input type="number" min="0" step="1" value="${p.preco_mercado||0}" onchange="updatePeca('${p.id}','preco_mercado',+this.value)" /></td>
+            <td><input type="number" min="0" step="1" value="${p.preco_tabela_brl||0}" onchange="updatePeca('${p.id}','preco_tabela_brl',+this.value)" /></td>
+            <td style="text-align:center"><input type="checkbox" ${p.avulso_kantu?'checked':''} onchange="updatePeca('${p.id}','avulso_kantu',this.checked)" /></td>
+            <td style="text-align:center"><input type="checkbox" ${p.avulso_fgt?'checked':''} onchange="updatePeca('${p.id}','avulso_fgt',this.checked)" /></td>
+            <td><input value="${(p.notas||'').replace(/"/g,'&quot;')}" onchange="updatePeca('${p.id}','notas',this.value)" /></td>
+            <td><button class="small danger" onclick="deletePeca('${p.id}')" title="Excluir">×</button></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderPacotes() {
+  const el = document.getElementById('tab-pacotes');
+  const selectedId = state.selectedPacoteId || (state.pacotes[0] && state.pacotes[0].id);
+  const pacote = state.pacotes.find(p => p.id === selectedId) || state.pacotes[0];
+
+  el.innerHTML = `
+    <div class="controls-row">
+      <button class="primary" onclick="addPacote()">+ Novo pacote</button>
+      <span class="help-text" style="margin-left:auto">${state.pacotes.length} pacotes</span>
+    </div>
+    <div class="pacote-grid">
+      <div class="pacote-list">
+        ${state.pacotes.map(p => {
+          const c = calcPacote(p);
+          return `
+            <div class="pacote-item ${p.id===selectedId?'selected':''}" onclick="selectPacote('${p.id}')">
+              <div class="pacote-item-name">${p.nome}</div>
+              <div class="pacote-item-meta">${p.dias}d · ${p.composicao.length} peças · $${fmt(p.preco_kantu_b2c||0)} Kantu</div>
+            </div>`;
+        }).join('')}
+      </div>
+      <div class="pacote-detail">
+        ${pacote ? renderPacoteDetail(pacote) : '<div class="empty-state">Nenhum pacote selecionado</div>'}
+      </div>
+    </div>
+  `;
+}
+
+function renderPacoteDetail(pacote) {
+  const c = calcPacote(pacote);
+  const pecasOpts = state.pecas.map(p => `<option value="${p.id}">${p.nome} ($${fmt(p.preco_mercado||0)})</option>`).join('');
+
+  function deltaCard(label, value, sub) {
+    let cls = 'delta-neutral';
+    if (value > 0) cls = 'delta-positive';
+    else if (value < 0) cls = 'delta-negative';
+    const sign = value > 0 ? '+' : '';
+    return `<div class="delta-card ${cls}"><div class="label">${label}</div><div class="value">${sign}$${fmt(Math.abs(value))}</div><div class="sub">${sub}</div></div>`;
+  }
+
+  return `
+    <h2><input value="${pacote.nome}" style="border:none;background:transparent;font-size:18px;font-weight:500;width:100%;padding:0" onchange="updatePacote('${pacote.id}','nome',this.value)" /></h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:12px;color:#6B6A65">ID: <code>${pacote.id}</code></div>
+      <button class="small danger" onclick="deletePacote('${pacote.id}')">Excluir pacote</button>
+    </div>
+
+    <div class="meta-input">
+      <div class="field-group">
+        <label>Dias</label>
+        <input type="number" min="1" value="${pacote.dias}" onchange="updatePacote('${pacote.id}','dias',+this.value)" />
+      </div>
+      <div class="field-group">
+        <label>BDT código</label>
+        <input value="${pacote.bdt_codigo||''}" onchange="updatePacote('${pacote.id}','bdt_codigo',this.value)" />
+      </div>
+      <div class="field-group">
+        <label>NET Kantu pacote ($)</label>
+        <input type="number" min="0" step="1" value="${pacote.custo_kantu_pacote||0}" onchange="updatePacote('${pacote.id}','custo_kantu_pacote',+this.value)" />
+      </div>
+      <div class="field-group">
+        <label>Preço B2C Kantu ($)</label>
+        <input type="number" min="0" step="1" value="${pacote.preco_kantu_b2c||0}" onchange="updatePacote('${pacote.id}','preco_kantu_b2c',+this.value)" />
+      </div>
+      <div class="field-group">
+        <label>Custo FGT ($)</label>
+        <input type="number" min="0" step="1" value="${pacote.custo_fgt_pacote||0}" onchange="updatePacote('${pacote.id}','custo_fgt_pacote',+this.value)" />
+      </div>
+      <div class="field-group">
+        <label>Preço FGT ($)</label>
+        <input type="number" min="0" step="1" value="${pacote.preco_fgt_pacote||0}" onchange="updatePacote('${pacote.id}','preco_fgt_pacote',+this.value)" />
+      </div>
+      <div class="field-group">
+        <label>Tabela BRL</label>
+        <input type="number" min="0" step="1" value="${pacote.preco_tabela_brl||0}" onchange="updatePacote('${pacote.id}','preco_tabela_brl',+this.value)" />
+      </div>
+      <div class="field-group">
+        <label>Tabela FGT BRL</label>
+        <input type="number" min="0" step="1" value="${pacote.preco_tabela_fgt_brl||0}" onchange="updatePacote('${pacote.id}','preco_tabela_fgt_brl',+this.value)" />
+      </div>
+      <div class="field-group" style="grid-column: span 4">
+        <label>Notas</label>
+        <input value="${(pacote.notas||'').replace(/"/g,'&quot;')}" onchange="updatePacote('${pacote.id}','notas',this.value)" />
+      </div>
+    </div>
+
+    <div class="composicao">
+      <h3>Composição (peças × quantidade)</h3>
+      <div class="peca-add-row">
+        <select id="add-peca-select-${pacote.id}">
+          <option value="">— Selecionar peça —</option>
+          ${pecasOpts}
+        </select>
+        <input type="number" id="add-peca-qty-${pacote.id}" min="1" value="1" />
+        <button class="primary" onclick="addPecaToPacote('${pacote.id}')">Adicionar</button>
+      </div>
+      <div class="composicao-list">
+        <div class="composicao-row header">
+          <div></div>
+          <div>Peça</div>
+          <div class="numeric">Qty</div>
+          <div class="numeric">Custo Kantu</div>
+          <div class="numeric">Custo Direto</div>
+          <div class="numeric">Preço FGT</div>
+          <div class="numeric">Preço Mercado</div>
+          <div></div>
+        </div>
+        ${pacote.composicao.map((item, idx) => {
+          const peca = getPeca(item.peca_id);
+          if (!peca) return `<div class="composicao-row"><div>⚠️</div><div>Peça ${item.peca_id} não encontrada</div><div></div><div></div><div></div><div></div><div></div><div><button class="small danger" onclick="removePecaFromPacote('${pacote.id}',${idx})">×</button></div></div>`;
+          return `
+            <div class="composicao-row">
+              <div><span class="tipo-tag tipo-${peca.tipo}">${peca.tipo.charAt(0)}</span></div>
+              <div>${peca.nome}<div style="font-size:10px;color:#9B9994">${peca.unidade}</div></div>
+              <div class="numeric"><input type="number" min="1" value="${item.qty}" onchange="updateComposicao('${pacote.id}',${idx},+this.value)" /></div>
+              <div class="numeric">$${fmt((peca.custo_kantu||0)*item.qty)}</div>
+              <div class="numeric">$${fmt((peca.custo_direto||0)*item.qty)}</div>
+              <div class="numeric">$${fmt((peca.preco_fgt||0)*item.qty)}</div>
+              <div class="numeric">$${fmt((peca.preco_mercado||0)*item.qty)}</div>
+              <div><button class="small danger" onclick="removePecaFromPacote('${pacote.id}',${idx})" title="Remover">×</button></div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="totals">
+      <div class="totals-card">
+        <h4>Soma das peças individuais</h4>
+        <div class="totals-row"><span class="label">Custo Kantu (NET)</span><span class="value">$${fmt(c.soma_custo_kantu)}</span></div>
+        <div class="totals-row"><span class="label">Custo Direto</span><span class="value">$${fmt(c.soma_custo_direto)}</span></div>
+        <div class="totals-row"><span class="label">Preço FGT (avulsos)</span><span class="value">$${fmt(c.soma_preco_fgt)}</span></div>
+        <div class="totals-row highlight"><span class="label">Preço Mercado (avulsos)</span><span class="value">$${fmt(c.soma_preco_mercado)}</span></div>
+      </div>
+      <div class="totals-card">
+        <h4>Pacote consolidado</h4>
+        <div class="totals-row"><span class="label">Custo Kantu pacote</span><span class="value">$${fmt(pacote.custo_kantu_pacote||0)}</span></div>
+        <div class="totals-row"><span class="label">Custo FGT pacote</span><span class="value">$${fmt(pacote.custo_fgt_pacote||0)}</span></div>
+        <div class="totals-row"><span class="label">Preço FGT pacote</span><span class="value">$${fmt(pacote.preco_fgt_pacote||0)}</span></div>
+        <div class="totals-row highlight"><span class="label">Preço B2C Kantu</span><span class="value">$${fmt(pacote.preco_kantu_b2c||0)}</span></div>
+      </div>
+    </div>
+
+    <div class="delta-grid">
+      ${deltaCard('Prêmio Kantu (B2C vs soma)', c.delta_kantu_mercado, fmtPct(c.delta_pct_kantu_mercado))}
+      ${deltaCard('Prêmio FGT (pacote vs soma)', c.delta_fgt, fmtPct(c.delta_pct_fgt))}
+      ${deltaCard('Margem absoluta FGT', c.margem_fgt, c.margem_pct_fgt ? fmtPct(c.margem_pct_fgt) + ' sobre custo' : 'preencha custo FGT')}
+      ${deltaCard('Delta Custo Kantu (pacote vs soma)', c.delta_custo_kantu, c.delta_custo_kantu===0 ? 'preencha custo NET' : 'NET pacote vs NET peças')}
+    </div>
+  `;
+}
+
+// ===========================================================================
+// AÇÕES
+// ===========================================================================
+function updatePeca(id, field, value) {
+  const p = getPeca(id); if (!p) return;
+  p[field] = value;
+  saveState();
+  if (field === 'nome' || field === 'tipo') renderPacotes();
+}
+function deletePeca(id) {
+  const used = state.pacotes.some(p => p.composicao.some(c => c.peca_id === id));
+  if (used && !confirm('Esta peça está em uso em pacotes. Excluir mesmo assim?')) return;
+  state.pecas = state.pecas.filter(p => p.id !== id);
+  saveState(); renderPecas(); renderDashboard();
+}
+function addPeca() {
+  const nome = prompt('Nome da nova peça:'); if (!nome) return;
+  const id = nome.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  if (state.pecas.some(p => p.id === id)) return alert('Já existe peça com esse ID.');
+  state.pecas.push({ id, nome, tipo: 'Outro', status: 'a-cadastrar', softtur_id: '', bdt_codigo: '', unidade: 'pessoa', custo_kantu: 0, custo_kantu_avulso: 0, custo_direto: 0, preco_fgt: 0, preco_mercado: 0, preco_tabela_brl: 0, avulso_kantu: false, avulso_fgt: false, notas: '' });
+  saveState(); renderPecas(); renderDashboard();
+}
+
+function updatePacote(id, field, value) {
+  const p = state.pacotes.find(x => x.id === id); if (!p) return;
+  p[field] = value;
+  saveState();
+  if (field === 'nome' || field === 'dias') renderPacotes();
+  else renderPacoteDetailOnly(id);
+}
+function renderPacoteDetailOnly(id) {
+  const p = state.pacotes.find(x => x.id === id); if (!p) return;
+  const detail = document.querySelector('.pacote-detail');
+  if (detail) detail.innerHTML = renderPacoteDetail(p);
+  // atualizar contador no item lateral
+  const items = document.querySelectorAll('.pacote-item');
+  items.forEach(el => {
+    const onclick = el.getAttribute('onclick');
+    if (onclick && onclick.includes(`'${id}'`)) {
+      const c = calcPacote(p);
+      const meta = el.querySelector('.pacote-item-meta');
+      if (meta) meta.textContent = `${p.dias}d · ${p.composicao.length} peças · $${fmt(p.preco_kantu_b2c||0)} Kantu`;
+    }
+  });
+}
+function deletePacote(id) {
+  if (!confirm('Excluir este pacote?')) return;
+  state.pacotes = state.pacotes.filter(p => p.id !== id);
+  state.selectedPacoteId = state.pacotes[0]?.id || null;
+  saveState(); renderPacotes(); renderDashboard();
+}
+function addPacote() {
+  const nome = prompt('Nome do novo pacote:'); if (!nome) return;
+  const id = nome.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  if (state.pacotes.some(p => p.id === id)) return alert('Já existe pacote com esse ID.');
+  state.pacotes.push({ id, nome, bdt_codigo: '', dias: 1, composicao: [], preco_kantu_b2c: 0, custo_kantu_pacote: 0, preco_fgt_pacote: 0, custo_fgt_pacote: 0, preco_tabela_brl: 0, preco_tabela_fgt_brl: 0, notas: '' });
+  state.selectedPacoteId = id;
+  saveState(); renderPacotes(); renderDashboard();
+}
+function selectPacote(id) {
+  state.selectedPacoteId = id;
+  saveState(); renderPacotes();
+}
+function addPecaToPacote(pacoteId) {
+  const sel = document.getElementById('add-peca-select-' + pacoteId);
+  const qtyEl = document.getElementById('add-peca-qty-' + pacoteId);
+  if (!sel.value) return alert('Selecione uma peça.');
+  const qty = +qtyEl.value || 1;
+  const p = state.pacotes.find(x => x.id === pacoteId);
+  const exist = p.composicao.find(c => c.peca_id === sel.value);
+  if (exist) exist.qty += qty;
+  else p.composicao.push({ peca_id: sel.value, qty });
+  saveState(); renderPacoteDetailOnly(pacoteId);
+}
+function removePecaFromPacote(pacoteId, idx) {
+  const p = state.pacotes.find(x => x.id === pacoteId);
+  p.composicao.splice(idx, 1);
+  saveState(); renderPacoteDetailOnly(pacoteId);
+}
+function updateComposicao(pacoteId, idx, qty) {
+  const p = state.pacotes.find(x => x.id === pacoteId);
+  if (qty < 1) qty = 1;
+  p.composicao[idx].qty = qty;
+  saveState(); renderPacoteDetailOnly(pacoteId);
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ===========================================================================
+// ABA MONTAR — visão ELI5 com blocos coloridos
+// ===========================================================================
+function renderMontar() {
+  const el = document.getElementById('tab-montar');
+  const selectedId = state.montarPacoteId || state.pacotes[0]?.id;
+  const pacote = state.pacotes.find(p => p.id === selectedId);
+  if (!pacote) { el.innerHTML = '<div class="empty-state">Crie um pacote primeiro na aba Pacotes.</div>'; return; }
+
+  const tipoFilter = state.montarTipoFilter || 'todos';
+  const tipos = ['Pacote-Base','Atividade-Dia','Trekking-Multi','Trem','Hotel','Ingresso','Guia','Transfer'];
+  const todosOuFiltro = tipoFilter === 'todos';
+
+  // Agrupar peças por tipo
+  const pecasFiltradas = state.pecas.filter(p => todosOuFiltro || p.tipo === tipoFilter);
+  const grupos = {};
+  for (const p of pecasFiltradas) {
+    if (!grupos[p.tipo]) grupos[p.tipo] = [];
+    grupos[p.tipo].push(p);
+  }
+  const tiposOrdenados = tipos.filter(t => grupos[t]);
+
+  const c = calcPacote(pacote);
+  const deltaCls = c.delta_pct_kantu_mercado > 5 ? 'pos' : c.delta_pct_kantu_mercado < -5 ? 'neg' : 'neu';
+
+  el.innerHTML = `
+    <div class="montar-header">
+      <select onchange="state.montarPacoteId=this.value; saveState(); renderMontar()">
+        ${state.pacotes.map(p => `<option value="${p.id}" ${p.id===selectedId?'selected':''}>${p.nome} · $${fmt(p.preco_kantu_b2c||0)}</option>`).join('')}
+      </select>
+      <button onclick="addPacoteFromMontar()">+ Novo pacote</button>
+      <button onclick="clearPacote('${pacote.id}')">Limpar peças</button>
+      <span class="help-text" style="margin-left:auto">Clique em um bloco para adicionar. Cada clique = +1 unidade.</span>
+    </div>
+
+    <div class="montar-grid">
+      <div class="paleta-wrap">
+        <h3>Paleta de peças — clique para adicionar</h3>
+        <div class="paleta-filtro">
+          <button class="${tipoFilter==='todos'?'active':''}" onclick="state.montarTipoFilter='todos'; renderMontar()">Todos</button>
+          ${tipos.map(t => `<button class="${tipoFilter===t?'active':''}" onclick="state.montarTipoFilter='${t}'; renderMontar()">${t}</button>`).join('')}
+        </div>
+        ${tiposOrdenados.map(tipo => `
+          <div class="paleta-grupo">
+            <div class="paleta-grupo-titulo">${tipo} (${grupos[tipo].length})</div>
+            <div class="paleta-grupo-blocos">
+              ${grupos[tipo].map(p => {
+                const statusCls = (p.status && p.status !== 'ativo') ? ` status-${p.status}` : '';
+                const titleText = ((p.status==='a-cadastrar' ? 'A CADASTRAR · ' : p.status==='rascunho' ? 'RASCUNHO · ' : '') + (p.notas||'')).replace(/"/g,'&quot;');
+                return `<span class="bloco paleta-${p.tipo}${statusCls}" onclick="adicionarBloco('${pacote.id}','${p.id}')" title="${titleText}">
+                  <span class="bloco-add">+</span>
+                  <span class="bloco-nome">${p.nome}</span>
+                  <span class="bloco-preco">$${fmt(p.custo_kantu||p.preco_mercado||0)}</span>
+                </span>`;
+              }).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
+
+      <div class="montagem-wrap">
+        <h3>${pacote.nome}</h3>
+        <div style="font-size:12px;color:#6B6A65;margin-bottom:10px">${pacote.dias} dia${pacote.dias>1?'s':''} · ${pacote.composicao.reduce((s,c)=>s+c.qty,0)} peças no total · preço Kantu publicado: <strong>$${fmt(pacote.preco_kantu_b2c||0)}</strong></div>
+
+        <div class="caixa-pacote ${pacote.composicao.length?'has-items':''}">
+          ${pacote.composicao.length === 0
+            ? `<div class="caixa-vazia">📦<br/>Caixa vazia. Clique em uma peça à esquerda para começar a montar.</div>`
+            : pacote.composicao.map((item, idx) => {
+                const peca = getPeca(item.peca_id);
+                if (!peca) return `<div class="bloco-no-pacote" style="border-color:#F0C4C4"><div class="bloco-info"><div class="bloco-info-nome">⚠ Peça ${item.peca_id} não existe</div></div><span class="remover" onclick="removePecaFromPacote('${pacote.id}',${idx}); renderMontar()">×</span></div>`;
+                const corBloco = `var(--${peca.tipo})`;
+                return `
+                  <div class="bloco-no-pacote" data-peca="${item.peca_id}" style="background:#FBFAF5">
+                    <div class="bloco-tipo-tag" style="background:${tipoCor(peca.tipo)}"></div>
+                    <div class="bloco-info">
+                      <div class="bloco-info-nome">${peca.nome}</div>
+                      <div class="bloco-info-tipo">${peca.tipo} · ${peca.unidade}</div>
+                    </div>
+                    <div class="qty-controls">
+                      <button class="qty-btn" onclick="changeQty('${pacote.id}',${idx},-1)" title="−1">−</button>
+                      <span class="qty-display">${item.qty}</span>
+                      <button class="qty-btn" onclick="changeQty('${pacote.id}',${idx},1)" title="+1">+</button>
+                    </div>
+                    <div class="preco-bloco">$${fmt((peca.preco_mercado||0)*item.qty)}</div>
+                    <span class="remover" onclick="removePecaFromPacote('${pacote.id}',${idx}); renderMontar()" title="Remover">×</span>
+                  </div>`;
+              }).join('')
+          }
+        </div>
+
+        <div class="resumo-mini">
+          ${(() => {
+            // Validador NET pacote informado vs soma calculada
+            const netInformado = pacote.custo_kantu_pacote || 0;
+            const somaNet = c.soma_custo_kantu;
+            const diffNet = netInformado - somaNet;
+            let validCls = 'neu', validMsg = 'sem NET informado';
+            if (netInformado > 0 && somaNet > 0) {
+              if (Math.abs(diffNet) < 5) { validCls = 'pos'; validMsg = 'BATE com soma das peças'; }
+              else if (diffNet < 0) { validCls = 'pos'; validMsg = `Kantu absorve $${fmt(Math.abs(diffNet))} (desconto pacote)`; }
+              else { validCls = 'neg'; validMsg = `Kantu cobra $${fmt(diffNet)} a mais que a soma`; }
+            }
+            return `
+              <div class="resumo-mini-row"><span class="resumo-label">Soma NET Kantu (peças)</span><span>$${fmt(somaNet)}</span></div>
+              <div class="resumo-mini-row"><span class="resumo-label">NET Kantu pacote informado</span><span>$${fmt(netInformado)}</span></div>
+              <div class="resumo-mini-row destaque">
+                <span>Validador NET</span>
+                <span><span class="delta-badge ${validCls}">${validMsg}</span></span>
+              </div>
+            `;
+          })()}
+          <div class="resumo-mini-row" style="margin-top:8px"><span class="resumo-label">Soma custo direto</span><span>$${fmt(c.soma_custo_direto)}</span></div>
+          <div class="resumo-mini-row"><span class="resumo-label">Soma preço mercado avulso</span><span>$${fmt(c.soma_preco_mercado)}</span></div>
+          <div class="resumo-mini-row destaque">
+            <span>Preço B2C Kantu vs soma mercado</span>
+            <span><span class="delta-badge ${deltaCls}">${c.delta_kantu_mercado>=0?'+':''}$${fmt(Math.abs(c.delta_kantu_mercado))} · ${fmtPct(c.delta_pct_kantu_mercado)}</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function tipoCor(tipo) {
+  const m = {
+    'Atividade-Dia': '#1D9E75', 'Pacote-Base': '#7F77DD', 'Trekking-Multi': '#D85A30',
+    'Trem': '#D4537E', 'Hotel': '#888780', 'Ingresso': '#BA7517',
+    'Guia': '#639922', 'Transfer': '#B4B2A9', 'Voo': '#E24B4A', 'Outro': '#B4B2A9'
+  };
+  return m[tipo] || '#B4B2A9';
+}
+
+function adicionarBloco(pacoteId, pecaId) {
+  const p = state.pacotes.find(x => x.id === pacoteId);
+  const exist = p.composicao.find(c => c.peca_id === pecaId);
+  if (exist) exist.qty += 1;
+  else p.composicao.push({ peca_id: pecaId, qty: 1 });
+  saveState(); renderMontar();
+  // animação no bloco adicionado
+  setTimeout(() => {
+    const el = document.querySelector(`.bloco-no-pacote[data-peca="${pecaId}"]`);
+    if (el) { el.classList.add('just-added'); setTimeout(()=>el.classList.remove('just-added'), 300); }
+  }, 0);
+}
+
+function changeQty(pacoteId, idx, delta) {
+  const p = state.pacotes.find(x => x.id === pacoteId);
+  p.composicao[idx].qty += delta;
+  if (p.composicao[idx].qty <= 0) p.composicao.splice(idx, 1);
+  saveState(); renderMontar();
+}
+
+function clearPacote(pacoteId) {
+  if (!confirm('Esvaziar a caixa de peças deste pacote?')) return;
+  const p = state.pacotes.find(x => x.id === pacoteId);
+  p.composicao = [];
+  saveState(); renderMontar();
+}
+
+function addPacoteFromMontar() {
+  addPacote();
+  state.montarPacoteId = state.pacotes[state.pacotes.length-1]?.id;
+  saveState(); renderMontar();
+}
+
+function render() {
+  renderDashboard();
+  renderMontar();
+  renderPecas();
+  renderPacotes();
+}
+
+// Tabs
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+render();
+</script>
+</body>
+</html>
